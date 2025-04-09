@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls  // 替代方案
 import Pkjviz
 
 // App.qml 不再直接使用 Screen01，而是使用 main.qml

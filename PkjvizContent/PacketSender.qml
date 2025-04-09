@@ -15,11 +15,11 @@ Rectangle {
         color: "#80000000"
         visible: Qt.application.name === "Qt Design Studio" || Qt.application.name === "Designer"
         z: 1000
-        
+
         Column {
             anchors.centerIn: parent
             spacing: 10
-            
+
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "PacketSender 设计时预览"
@@ -27,49 +27,49 @@ Rectangle {
                 font.bold: true
                 font.pixelSize: 16
             }
-            
+
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "在实际运行时，此组件将根据宽度自动调整布局"
                 color: "#ffffff"
                 font.pixelSize: 12
             }
-            
+
             Row {
                 anchors.horizontalCenter: parent.horizontalCenter
                 spacing: 10
-                
+
                 Button {
                     text: "标准模式"
                     onClicked: {
-                        packetSenderRoot.designerPreviewNarrow = false
-                        packetSenderRoot.designerPreviewCompact = false
-                        packetSenderRoot.narrowMode = false
-                        packetSenderRoot.compactMode = false
+                        packetSenderRoot.designerPreviewNarrow = false;
+                        packetSenderRoot.designerPreviewCompact = false;
+                        packetSenderRoot.narrowMode = false;
+                        packetSenderRoot.compactMode = false;
                     }
                 }
-                
+
                 Button {
                     text: "紧凑模式"
                     onClicked: {
-                        packetSenderRoot.designerPreviewNarrow = false
-                        packetSenderRoot.designerPreviewCompact = true
-                        packetSenderRoot.narrowMode = false
-                        packetSenderRoot.compactMode = true
+                        packetSenderRoot.designerPreviewNarrow = false;
+                        packetSenderRoot.designerPreviewCompact = true;
+                        packetSenderRoot.narrowMode = false;
+                        packetSenderRoot.compactMode = true;
                     }
                 }
-                
+
                 Button {
                     text: "窄屏模式"
                     onClicked: {
-                        packetSenderRoot.designerPreviewNarrow = true
-                        packetSenderRoot.designerPreviewCompact = true
-                        packetSenderRoot.narrowMode = true
-                        packetSenderRoot.compactMode = true
+                        packetSenderRoot.designerPreviewNarrow = true;
+                        packetSenderRoot.designerPreviewCompact = true;
+                        packetSenderRoot.narrowMode = true;
+                        packetSenderRoot.compactMode = true;
                     }
                 }
             }
-            
+
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "点击此处关闭帮助"
@@ -92,32 +92,32 @@ Rectangle {
         if (Qt.application.name === "Qt Design Studio" || Qt.application.name === "Designer") {
             // 在设计时使用预览模式
             if (designerPreviewNarrow) {
-                narrowMode = true
-                compactMode = true
+                narrowMode = true;
+                compactMode = true;
             } else if (designerPreviewCompact) {
-                narrowMode = false
-                compactMode = true
+                narrowMode = false;
+                compactMode = true;
             } else {
-                narrowMode = false
-                compactMode = false
+                narrowMode = false;
+                compactMode = false;
             }
         } else {
             // 在实际运行时监听宽度变化
-            updateLayoutMode()
+            updateLayoutMode();
         }
     }
 
     // 监听宽度变化
     onWidthChanged: {
         if (Qt.application.name !== "Qt Design Studio" && Qt.application.name !== "Designer") {
-            updateLayoutMode()
+            updateLayoutMode();
         }
     }
 
     // 根据宽度更新布局模式
     function updateLayoutMode() {
-        narrowMode = width < 400
-        compactMode = width < 600
+        narrowMode = width < 400;
+        compactMode = width < 600;
     }
 
     // 使用简单的阴影效果替代DropShadow

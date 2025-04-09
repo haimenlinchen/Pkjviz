@@ -8,8 +8,8 @@
 #include <QGuiApplication>
 #include "qqmlextensionplugin.h"
 
-Q_IMPORT_QML_PLUGIN(PkjvizContentPlugin)
 Q_IMPORT_QML_PLUGIN(PkjvizPlugin)
+Q_IMPORT_QML_PLUGIN(PkjvizContentPlugin)
 
 const char mainQmlFile[] = "qrc:/qt/qml/PkjvizContent/App.qml";
 
