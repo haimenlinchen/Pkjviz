@@ -804,88 +804,27 @@ Item {
             // 为演示目的，使用模拟数据
             var tables = [
                 {
-                    name: "ACL_TABLE",
-                    desc: "访问控制列表表，用于存储ACL规则",
+                    name: "DIS_RSLT_PHB_PROF",
+                    desc: "Per-Hop-Behavior QOS profile",
                     fields: [
                         {
-                            name: "acl_id",
-                            desc: "ACL规则ID",
-                            value: "0x0001"
+                            name: "prof_idx_pcp_dei",
+                            desc: "profile index for PCP/DEI",
+                            value: "0x0 | 0"
                         },
-                        {
-                            name: "priority",
-                            desc: "优先级",
-                            value: "10"
-                        },
-                        {
-                            name: "src_ip",
-                            desc: "源IP地址",
-                            value: "192.168.1.1"
-                        },
-                        {
-                            name: "dst_ip",
-                            desc: "目标IP地址",
-                            value: "10.0.0.1"
-                        },
-                        {
-                            name: "action",
-                            desc: "动作",
-                            value: "FORWARD"
-                        }
                     ]
                 },
                 {
-                    name: "VLAN_TABLE",
-                    desc: "VLAN配置表，存储VLAN相关信息",
+                    name: "DIS_RSLT_PHB_PROF",
+                    desc: "Per-Hop-Behavior QOS profile",
                     fields: [
                         {
-                            name: "vlan_id",
-                            desc: "VLAN ID",
-                            value: "100"
+                            name: "prof_idx_pcp_dei",
+                            desc: "profile index for PCP/DEI",
+                            value: "0x0 | 0"
                         },
-                        {
-                            name: "ports",
-                            desc: "端口列表",
-                            value: "1,2,3,4"
-                        },
-                        {
-                            name: "tagged",
-                            desc: "标记端口",
-                            value: "1,2"
-                        },
-                        {
-                            name: "untagged",
-                            desc: "非标记端口",
-                            value: "3,4"
-                        }
                     ]
                 },
-                {
-                    name: "PORT_TABLE",
-                    desc: "端口配置表，包含端口状态信息",
-                    fields: [
-                        {
-                            name: "port_id",
-                            desc: "端口ID",
-                            value: "1"
-                        },
-                        {
-                            name: "speed",
-                            desc: "端口速率",
-                            value: "1000Mbps"
-                        },
-                        {
-                            name: "status",
-                            desc: "端口状态",
-                            value: "UP"
-                        },
-                        {
-                            name: "mac",
-                            desc: "MAC地址",
-                            value: "00:11:22:33:44:55"
-                        }
-                    ]
-                }
             ];
 
             var randomIndex = Math.floor(Math.random() * tables.length);

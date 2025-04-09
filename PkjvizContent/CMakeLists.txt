@@ -9,15 +9,15 @@ qt6_add_qml_module(PkjvizContent
     VERSION 1.0
     RESOURCE_PREFIX "/qt/qml"
     QML_FILES
-        "SplitViewManager.qml"
-        "LogEditor.qml"
-        "ResizeHandle.qml"
-        "EditorSplitViewManager.qml"
-        "EditorPane.qml"
-        "Screen01.ui.qml"
-        "main.qml"
         "TabDragHandle.qml"
         "App.qml"
+        "SplitViewManager.qml"
+        "main.qml"
+        "LogEditor.qml"
+        "Screen01.ui.qml"
+        "ResizeHandle.qml"
+        "EditorPane.qml"
+        "EditorSplitViewManager.qml"
         "PacketSender.qml"
 )
 

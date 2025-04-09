@@ -4,14 +4,14 @@ It is supposed to be strictly declarative and only uses a subset of QML. If you 
 this file manually, you might introduce QML code that is not supported by Qt Design Studio.
 Check out https://doc.qt.io/qtcreator/creator-quick-ui-forms.html for details on .ui.qml files.
 */
-
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Effects
 import Pkjviz
-import "."  // 导入当前目录，以便能找到PacketSender.qml、LogEditor.qml和ResizeHandle.qml
+import "."
 
+// 导入当前目录，以便能找到PacketSender.qml、LogEditor.qml和ResizeHandle.qml
 Rectangle {
     id: root
     width: Constants.width
@@ -352,8 +352,8 @@ Rectangle {
                     }
 
                     // 用于跟踪状态的属性
-                    property int mode: 0  // 0:离线, 1:在线, 2:演示
-                    property bool checked: mode === 1  // 只有在线模式才启用设备和发包工具
+                    property int mode: 0 // 0:离线, 1:在线, 2:演示
+                    property bool checked: mode === 1 // 只有在线模式才启用设备和发包工具
                 }
 
                 Rectangle {
@@ -808,7 +808,7 @@ Rectangle {
                         anchors.bottom: parent.bottom
                         height: (switchButton.mode === 0 || switchButton.mode === 1) ? (isCollapsed ? 30 : onlineToolsResizeHandle.toolsHeight) : 0
                         color: "#1e1e1e"
-                        visible: switchButton.mode === 0 || switchButton.mode === 1  // 在离线或在线模式下显示
+                        visible: switchButton.mode === 0 || switchButton.mode === 1 // 在离线或在线模式下显示
                         objectName: "onlineTools"
 
                         // 简化属性，只保留一个isCollapsed状态
@@ -884,7 +884,7 @@ Rectangle {
                                 id: offlineToolsContainer
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
-                                visible: switchButton.mode === 0  // 仅在离线模式显示
+                                visible: switchButton.mode === 0 // 仅在离线模式显示
                                 objectName: "offlineToolsContainer"
 
                                 RowLayout {
@@ -1023,7 +1023,7 @@ Rectangle {
                                 id: onlineToolsContainer
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
-                                visible: switchButton.mode === 1  // 仅在在线模式显示
+                                visible: switchButton.mode === 1 // 仅在在线模式显示
                                 objectName: "onlineToolsContainer"
 
                                 RowLayout {
@@ -1148,7 +1148,7 @@ Rectangle {
                                                     MouseArea {
                                                         id: deviceListItemMouseArea
                                                         anchors.fill: parent
-                                                        anchors.rightMargin: 20  // 为右侧箭头按钮留出空间
+                                                        anchors.rightMargin: 20 // 为右侧箭头按钮留出空间
                                                         hoverEnabled: true
                                                         acceptedButtons: Qt.LeftButton
                                                         objectName: "deviceListItemMouseArea"
@@ -1312,7 +1312,10 @@ Rectangle {
                                         ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
                                         ColumnLayout {
-                                            width: parent.width
+                                            x: 0
+                                            y: 0
+                                            width: 234
+                                            height: 186
                                             spacing: 12
 
                                             // 诊断代码部分
@@ -1470,7 +1473,11 @@ Rectangle {
                                     ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
                                     ColumnLayout {
-                                        width: parent.width
+                                        x: 0
+                                        y: 0
+                                        width: 234
+                                        height: 511
+                                        scale: 1
                                         spacing: 12
 
                                         // 表名
@@ -1544,115 +1551,134 @@ Rectangle {
                                             }
                                         }
 
-                                        // 字段列表标题
-                                        Text {
-                                            text: "字段列表:"
-                                            color: "#0d9bfd"
-                                            font.bold: true
-                                            font.pixelSize: 13
-                                            Layout.topMargin: 4
-                                        }
-
                                         // 字段列表
-                                        ListView {
-                                            id: fieldListView
+                                        ColumnLayout {
                                             Layout.fillWidth: true
-                                            Layout.preferredHeight: 280
-                                            clip: true
-                                            spacing: 8
-                                            objectName: "fieldListView"
+                                            spacing: 4
 
-                                            // 示例数据，实际应通过API更新
-                                            model: ListModel {
-                                                id: fieldListModel
-                                                objectName: "fieldListModel"
-
-                                                ListElement {
-                                                    fieldName: "acl_id"
-                                                    fieldDesc: "ACL规则ID"
-                                                    fieldValue: "0x0001"
-                                                }
-
-                                                ListElement {
-                                                    fieldName: "priority"
-                                                    fieldDesc: "优先级"
-                                                    fieldValue: "10"
-                                                }
-
-                                                ListElement {
-                                                    fieldName: "src_ip"
-                                                    fieldDesc: "源IP地址"
-                                                    fieldValue: "192.168.1.1"
-                                                }
-
-                                                ListElement {
-                                                    fieldName: "dst_ip"
-                                                    fieldDesc: "目标IP地址"
-                                                    fieldValue: "10.0.0.1"
-                                                }
-
-                                                ListElement {
-                                                    fieldName: "action"
-                                                    fieldDesc: "动作"
-                                                    fieldValue: "FORWARD"
-                                                }
+                                            Text {
+                                                text: "字段列表:"
+                                                color: "#0d9bfd"
+                                                font.bold: true
+                                                font.pixelSize: 13
                                             }
 
-                                            delegate: Rectangle {
-                                                width: parent.width
-                                                height: fieldLayout.height + 12
+                                            Rectangle {
+                                                Layout.fillWidth: true
+                                                Layout.preferredHeight: 200
                                                 color: "#252526"
                                                 radius: 4
                                                 border.width: 1
-                                                border.color: fieldMouseArea.containsMouse ? "#3c6a9e" : "#333333"
+                                                border.color: "#333333"
 
-                                                ColumnLayout {
-                                                    id: fieldLayout
+                                                ListView {
+                                                    id: fieldListView
                                                     anchors.fill: parent
-                                                    anchors.margins: 8
+                                                    anchors.margins: 6
+                                                    clip: true
                                                     spacing: 4
-
-                                                    // 字段名和值
-                                                    RowLayout {
-                                                        Layout.fillWidth: true
-
-                                                        Text {
-                                                            text: fieldName + ":"
-                                                            color: "#7cbb5e"
-                                                            font.bold: true
-                                                            font.family: "Consolas"
-                                                            font.pixelSize: 12
-                                                            Layout.preferredWidth: 80
+                                                    model: ListModel {
+                                                        id: fieldListModel
+                                                        // 默认数据，可通过API更新
+                                                        ListElement {
+                                                            fieldName: "acl_id"
+                                                            fieldDescription: "ACL唯一标识符"
+                                                            fieldValue: "1001"
                                                         }
+                                                        ListElement {
+                                                            fieldName: "priority"
+                                                            fieldDescription: "规则优先级"
+                                                            fieldValue: "100"
+                                                        }
+                                                        ListElement {
+                                                            fieldName: "action"
+                                                            fieldDescription: "执行动作"
+                                                            fieldValue: "PERMIT"
+                                                        }
+                                                    }
+                                                    objectName: "fieldListView"
 
-                                                        Text {
-                                                            text: fieldValue
-                                                            color: "#cccccc"
-                                                            font.family: "Consolas"
-                                                            font.pixelSize: 12
-                                                            Layout.fillWidth: true
-                                                            wrapMode: Text.Wrap
+                                                    delegate: Rectangle {
+                                                        width: parent.width
+                                                        height: 80
+                                                        color: "#1e1e1e"
+                                                        radius: 3
+
+                                                        ColumnLayout {
+                                                            anchors.fill: parent
+                                                            anchors.margins: 6
+                                                            spacing: 2
+
+                                                            RowLayout {
+                                                                Layout.fillWidth: true
+
+                                                                Text {
+                                                                    text: "名称:"
+                                                                    color: "#cccccc"
+                                                                    font.bold: true
+                                                                    font.pixelSize: 12
+                                                                    width: 40
+                                                                }
+
+                                                                Text {
+                                                                    text: fieldName
+                                                                    color: "#ffffff"
+                                                                    font.family: "Consolas"
+                                                                    font.pixelSize: 12
+                                                                    Layout.fillWidth: true
+                                                                    elide: Text.ElideRight
+                                                                }
+                                                            }
+
+                                                            RowLayout {
+                                                                Layout.fillWidth: true
+
+                                                                Text {
+                                                                    text: "描述:"
+                                                                    color: "#cccccc"
+                                                                    font.bold: true
+                                                                    font.pixelSize: 12
+                                                                    width: 40
+                                                                }
+
+                                                                Text {
+                                                                    text: fieldDescription
+                                                                    color: "#cccccc"
+                                                                    font.pixelSize: 12
+                                                                    Layout.fillWidth: true
+                                                                    wrapMode: Text.Wrap
+                                                                    maximumLineCount: 2
+                                                                    elide: Text.ElideRight
+                                                                }
+                                                            }
+
+                                                            RowLayout {
+                                                                Layout.fillWidth: true
+
+                                                                Text {
+                                                                    text: "值:"
+                                                                    color: "#cccccc"
+                                                                    font.bold: true
+                                                                    font.pixelSize: 12
+                                                                    width: 40
+                                                                }
+
+                                                                Text {
+                                                                    text: fieldValue
+                                                                    color: "#7cbb5e"
+                                                                    font.family: "Consolas"
+                                                                    font.pixelSize: 12
+                                                                    Layout.fillWidth: true
+                                                                    elide: Text.ElideRight
+                                                                }
+                                                            }
                                                         }
                                                     }
 
-                                                    // 字段描述
-                                                    Text {
-                                                        text: "描述: " + fieldDesc
-                                                        color: "#888888"
-                                                        font.italic: true
-                                                        font.pixelSize: 11
-                                                        Layout.fillWidth: true
-                                                        wrapMode: Text.Wrap
+                                                    ScrollBar.vertical: ScrollBar {
+                                                        active: true
+                                                        policy: ScrollBar.AsNeeded
                                                     }
-                                                }
-
-                                                // 鼠标悬停效果
-                                                MouseArea {
-                                                    id: fieldMouseArea
-                                                    anchors.fill: parent
-                                                    hoverEnabled: true
-                                                    onEntered: parent.color = "#2a2d2e"
-                                                    onExited: parent.color = "#252526"
                                                 }
                                             }
                                         }
