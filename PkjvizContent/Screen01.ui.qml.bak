@@ -18,13 +18,11 @@ Rectangle {
     height: Constants.height
     visible: true
     color: "#1e1e1e"
-    objectName: "root"
 
     ColumnLayout {
         id: mainColumn
         anchors.fill: parent
         spacing: 0
-        objectName: "mainColumn"
 
         // 顶部菜单栏
         Rectangle {
@@ -286,7 +284,6 @@ Rectangle {
                     Layout.preferredHeight: 25
                     color: "#2b2b2b"
                     radius: 3
-                    objectName: "switchButton"
 
                     Row {
                         anchors.fill: parent
@@ -308,7 +305,9 @@ Rectangle {
 
                             MouseArea {
                                 anchors.fill: parent
-                                objectName: "switchButtonOfflineMouseArea"
+                                onClicked: {
+                                    switchButton.mode = 0;
+                                }
                             }
                         }
 
@@ -327,7 +326,9 @@ Rectangle {
 
                             MouseArea {
                                 anchors.fill: parent
-                                objectName: "switchButtonOnlineMouseArea"
+                                onClicked: {
+                                    switchButton.mode = 1;
+                                }
                             }
                         }
 
@@ -346,7 +347,9 @@ Rectangle {
 
                             MouseArea {
                                 anchors.fill: parent
-                                objectName: "switchButtonDemoMouseArea"
+                                onClicked: {
+                                    switchButton.mode = 2;
+                                }
                             }
                         }
                     }
@@ -414,7 +417,6 @@ Rectangle {
                             Layout.fillHeight: true
                             model: ["LT", "NB-SDK", "NB-Cosim"]
                             currentIndex: 0
-                            objectName: "environmentSelector"
 
                             background: Rectangle {
                                 color: "#333333"
@@ -565,7 +567,6 @@ Rectangle {
                             Layout.fillHeight: switchButton.mode !== 2 ? true : true / 2
                             model: ["📁 src", "  📄 main.py", "  📄 utils.py", "📁 tests", "  📄 test_main.py", "📁 docs", "  📄 README.md"]
                             property var selectedItems: []
-                            objectName: "fileListView"
                             delegate: Rectangle {
                                 width: parent.width
                                 height: 25
@@ -597,7 +598,39 @@ Rectangle {
                                     acceptedButtons: Qt.LeftButton | Qt.RightButton
                                     onEntered: parent.color = isSelected ? "#3a3d3e" : "#2a2d2e"
                                     onExited: parent.color = isSelected ? "#3a3d3e" : "transparent"
-                                    objectName: "fileItemMouseArea_" + index
+                                    onClicked: {
+                                        if (mouse.button === Qt.LeftButton) {
+                                            if (mouse.modifiers & Qt.ControlModifier) {
+                                                // Ctrl+点击：添加或移除选择
+                                                if (isSelected) {
+                                                    // 移除当前项
+                                                    var newSelection = [];
+                                                    for (var i = 0; i < fileListView.selectedItems.length; i++) {
+                                                        if (fileListView.selectedItems[i] !== index) {
+                                                            newSelection.push(fileListView.selectedItems[i]);
+                                                        }
+                                                    }
+                                                    fileListView.selectedItems = newSelection;
+                                                } else {
+                                                    // 添加当前项
+                                                    var newSelection = fileListView.selectedItems.slice();
+                                                    newSelection.push(index);
+                                                    fileListView.selectedItems = newSelection;
+                                                }
+                                            } else {
+                                                // 普通点击：仅选择当前项
+                                                fileListView.selectedItems = [index];
+                                            }
+                                        } else if (mouse.button === Qt.RightButton) {
+                                            // 如果右击的项不在选择中，则单独选择它
+                                            if (!isSelected) {
+                                                fileListView.selectedItems = [index];
+                                            }
+                                            fileContextMenu.x = mouse.x;
+                                            fileContextMenu.y = mouse.y;
+                                            fileContextMenu.open();
+                                        }
+                                    }
                                 }
                             }
 
@@ -611,7 +644,6 @@ Rectangle {
                                     border.width: 1
                                     radius: 3
                                 }
-                                objectName: "fileContextMenu"
 
                                 MenuItem {
                                     text: "重命名"
@@ -626,7 +658,6 @@ Rectangle {
                                         leftPadding: 8
                                         verticalAlignment: Text.AlignVCenter
                                     }
-                                    objectName: "fileRenameMenuItem"
                                 }
 
                                 MenuItem {
@@ -642,7 +673,6 @@ Rectangle {
                                         leftPadding: 8
                                         verticalAlignment: Text.AlignVCenter
                                     }
-                                    objectName: "fileDeleteMenuItem"
                                 }
 
                                 MenuItem {
@@ -658,7 +688,6 @@ Rectangle {
                                         leftPadding: 8
                                         verticalAlignment: Text.AlignVCenter
                                     }
-                                    objectName: "fileCompareMenuItem"
                                 }
                             }
                         }
@@ -721,7 +750,6 @@ Rectangle {
                                     Layout.fillWidth: true
                                     Layout.fillHeight: true
                                     model: ["acl_arp_acl", "acl_dot1_qos", "vxlan_decap", "mpls_basic_decap", "uc_vlan_ipv4"]
-                                    objectName: "demoContentListView"
                                     delegate: Rectangle {
                                         width: parent.width
                                         height: 30
@@ -759,7 +787,6 @@ Rectangle {
                                                     horizontalAlignment: Text.AlignHCenter
                                                     verticalAlignment: Text.AlignVCenter
                                                 }
-                                                objectName: "demoPlayButton_" + index
                                             }
                                         }
 
@@ -768,7 +795,6 @@ Rectangle {
                                             hoverEnabled: true
                                             onEntered: parent.color = "#2a2d2e"
                                             onExited: parent.color = "transparent"
-                                            objectName: "demoContentMouseArea_" + index
                                         }
                                     }
                                 }
@@ -807,7 +833,6 @@ Rectangle {
                         height: (switchButton.mode === 0 || switchButton.mode === 1) ? (isCollapsed ? 30 : (switchButton.mode === 0 ? (editorsCollapsed ? 30 : onlineToolsResizeHandle.toolsHeight) : (onlineToolsCollapsed ? 30 : onlineToolsResizeHandle.toolsHeight))) : 0
                         color: "#1e1e1e"
                         visible: switchButton.mode === 0 || switchButton.mode === 1  // 在离线或在线模式下显示
-                        objectName: "onlineTools"
 
                         // 添加属性来存储和记忆发包工具的高度
                         property alias resizeHandle: onlineToolsResizeHandle
@@ -844,7 +869,9 @@ Rectangle {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
-                                objectName: "collapseMouseArea"
+                                onClicked: {
+                                    onlineTools.isCollapsed = !onlineTools.isCollapsed;
+                                }
                             }
                         }
 
@@ -858,7 +885,6 @@ Rectangle {
                             height: 20
                             color: "transparent"
                             visible: !onlineTools.isCollapsed && switchButton.mode === 0 // 只在离线模式且整个工具区未收起时显示
-                            objectName: "editorsCollapseButton"
 
                             Text {
                                 anchors.centerIn: parent
@@ -871,7 +897,9 @@ Rectangle {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
-                                objectName: "editorsCollapseButtonMouseArea"
+                                onClicked: {
+                                    onlineTools.editorsCollapsed = !onlineTools.editorsCollapsed;
+                                }
                             }
                         }
 
@@ -885,7 +913,6 @@ Rectangle {
                             height: 20
                             color: "transparent"
                             visible: !onlineTools.isCollapsed && switchButton.mode === 1 // 只在在线模式且整个工具区未收起时显示
-                            objectName: "onlineToolsCollapseButton"
 
                             Text {
                                 anchors.centerIn: parent
@@ -898,7 +925,9 @@ Rectangle {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
-                                objectName: "onlineToolsCollapseButtonMouseArea"
+                                onClicked: {
+                                    onlineTools.onlineToolsCollapsed = !onlineTools.onlineToolsCollapsed;
+                                }
                             }
                         }
 
@@ -958,6 +987,7 @@ Rectangle {
                                                     horizontalAlignment: Text.AlignHCenter
                                                     verticalAlignment: Text.AlignVCenter
                                                 }
+                                                onClicked: onlineTools.editorsCollapsed = !onlineTools.editorsCollapsed
                                             }
                                         }
                                     }
@@ -1039,7 +1069,6 @@ Rectangle {
                                             currentIndex: -1
                                             clip: true
                                             spacing: 0
-                                            objectName: "deviceListView"
                                             delegate: Rectangle {
                                                 width: parent.width
                                                 height: 35
@@ -1089,7 +1118,6 @@ Rectangle {
                                                         MouseArea {
                                                             id: arrowMouseArea
                                                             anchors.fill: parent
-                                                            objectName: "arrowMouseArea"
                                                         }
                                                     }
                                                 }
@@ -1100,7 +1128,6 @@ Rectangle {
                                                     anchors.rightMargin: 20  // 为右侧箭头按钮留出空间
                                                     hoverEnabled: true
                                                     acceptedButtons: Qt.LeftButton
-                                                    objectName: "deviceListItemMouseArea"
                                                     onEntered: if (!ListView.isCurrentItem)
                                                         parent.color = "#2a2d2e"
                                                     onExited: if (!ListView.isCurrentItem)
@@ -1170,6 +1197,7 @@ Rectangle {
                                                     horizontalAlignment: Text.AlignHCenter
                                                     verticalAlignment: Text.AlignVCenter
                                                 }
+                                                onClicked: onlineTools.onlineToolsCollapsed = !onlineTools.onlineToolsCollapsed
                                             }
                                         }
                                     }
@@ -1228,6 +1256,7 @@ Rectangle {
                                                     horizontalAlignment: Text.AlignHCenter
                                                     verticalAlignment: Text.AlignVCenter
                                                 }
+                                                onClicked: onlineTools.editorsCollapsed = !onlineTools.editorsCollapsed
                                             }
                                         }
                                     }
@@ -1443,7 +1472,6 @@ Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 150
             color: "#1e1e1e"
-            objectName: "consoleArea"
 
             ColumnLayout {
                 anchors.fill: parent
@@ -1466,7 +1494,6 @@ Rectangle {
                             id: consoleTabBar
                             Layout.preferredWidth: 200
                             Layout.preferredHeight: 30
-                            objectName: "consoleTabBar"
                             background: Rectangle {
                                 color: "transparent"
                             }
@@ -1529,7 +1556,6 @@ Rectangle {
                             }
                             ToolTip.visible: hovered
                             ToolTip.text: "清除"
-                            objectName: "consoleClearButton"
                         }
 
                         // 折叠按钮
@@ -1549,7 +1575,6 @@ Rectangle {
                             }
                             ToolTip.visible: hovered
                             ToolTip.text: "关闭面板"
-                            objectName: "consoleCloseButton"
                         }
                     }
                 }
@@ -1583,7 +1608,6 @@ Rectangle {
                                     color: "transparent"
                                 }
                                 text: "[10:45:32] 程序已启动\n[10:45:33] 加载模块: core.module\n[10:45:34] 初始化完成\n[10:45:36] 警告: 设备未连接\n[10:45:40] 信息: 等待用户操作"
-                                objectName: "outputTextArea"
                             }
                         }
                     }
@@ -1613,7 +1637,6 @@ Rectangle {
                                         color: "transparent"
                                     }
                                     text: "$ python main.py\n初始化环境...\n加载配置文件...\n启动服务...\n服务已启动，监听端口 8080\n"
-                                    objectName: "terminalTextArea"
                                 }
                             }
 
@@ -1646,7 +1669,6 @@ Rectangle {
                                         background: Rectangle {
                                             color: "transparent"
                                         }
-                                        objectName: "commandInput"
                                     }
                                 }
                             }
@@ -1703,7 +1725,6 @@ Rectangle {
         width: parent.width
         anchors.top: parent.top
         color: mouseArea.containsMouse || mouseArea.drag.active ? "#0d6efd" : "transparent"
-        objectName: "onlineToolsResizeHandle"
 
         // 存储发包工具的高度
         property int toolsHeight: 500
@@ -1735,7 +1756,6 @@ Rectangle {
             anchors.margins: -3 // 增加可点击区域
             hoverEnabled: true
             cursorShape: Qt.SizeVerCursor
-            objectName: "mouseArea"
 
             // 拖动范围
             drag.target: parent
@@ -1746,6 +1766,12 @@ Rectangle {
             // 使用属性绑定替代JavaScript块
             property bool isDragging: pressed
             property int newHeight: isDragging ? Math.max(onlineToolsResizeHandle.minHeight, Math.min(onlineToolsResizeHandle.maxHeight, -onlineToolsResizeHandle.y)) : onlineToolsResizeHandle.toolsHeight
+
+            // 使用Qt的信号和槽机制
+            onNewHeightChanged: if (isDragging)
+                onlineToolsResizeHandle.toolsHeight = newHeight
+            onPressedChanged: if (!pressed)
+                onlineToolsResizeHandle.y = 0
         }
     }
 
@@ -1761,7 +1787,6 @@ Rectangle {
         border.width: 1
         radius: 5
         z: 100
-        objectName: "connectionDialog"
 
         // 用于存储当前连接的设备名称
         property string deviceName: ""
@@ -1825,7 +1850,6 @@ Rectangle {
                     height: 30
                     placeholderText: "请输入用户名"
                     color: "#ffffff"
-                    objectName: "usernameField"
                     background: Rectangle {
                         color: "#1e1e1e"
                         radius: 3
@@ -1853,7 +1877,6 @@ Rectangle {
                     placeholderText: "请输入密码"
                     color: "#ffffff"
                     echoMode: TextInput.Password
-                    objectName: "passwordField"
                     background: Rectangle {
                         color: "#1e1e1e"
                         radius: 3
@@ -1890,7 +1913,6 @@ Rectangle {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    objectName: "cancelButton"
                 }
 
                 Button {
@@ -1908,8 +1930,91 @@ Rectangle {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    objectName: "connectButton"
                 }
+            }
+        }
+    }
+
+    // 连接按钮信号
+    Connections {
+        target: cancelButton
+        onClicked: {
+            connectionDialog.visible = false;
+            deviceListView.currentIndex = -1;
+        }
+    }
+
+    Connections {
+        target: connectButton
+        onClicked: {
+            connectionDialog.visible = false;
+        }
+    }
+
+    Connections {
+        target: collapseMouseArea
+        onClicked: {
+            onlineTools.isCollapsed = !onlineTools.isCollapsed;
+        }
+    }
+
+    Connections {
+        target: editorsCollapseButton.MouseArea
+        onClicked: {
+            onlineTools.editorsCollapsed = !onlineTools.editorsCollapsed;
+        }
+    }
+
+    Connections {
+        target: onlineToolsCollapseButton.MouseArea
+        onClicked: {
+            onlineTools.onlineToolsCollapsed = !onlineTools.onlineToolsCollapsed;
+        }
+    }
+
+    Connections {
+        target: mouseArea
+        onNewHeightChanged: {
+            if (mouseArea.isDragging)
+                onlineToolsResizeHandle.toolsHeight = mouseArea.newHeight;
+        }
+
+        onPressedChanged: {
+            if (!mouseArea.pressed)
+                onlineToolsResizeHandle.y = 0;
+        }
+    }
+
+    Connections {
+        target: deviceListItemMouseArea
+        onClicked: {
+            deviceListView.currentIndex = index;
+            connectionDialog.visible = true;
+            connectionDialog.deviceName = modelData;
+        }
+    }
+
+    Connections {
+        target: arrowMouseArea
+        onClicked: {
+            var item = deviceListView.itemAt(mouse.x, mouse.y);
+            if (item) {
+                var index = deviceListView.indexAt(mouse.x, mouse.y);
+                deviceListView.currentIndex = index;
+                connectionDialog.visible = true;
+                connectionDialog.deviceName = deviceListView.model[index];
+            }
+        }
+    }
+
+    // 添加Connections对象来处理returnPressed信号
+    Connections {
+        target: commandInput
+        onAccepted: {
+            if (commandInput.text.trim() !== "") {
+                terminalTextArea.text += "$ " + commandInput.text + "\n";
+                // 这里可以添加命令执行逻辑
+                commandInput.text = "";
             }
         }
     }

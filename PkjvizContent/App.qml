@@ -1,14 +1,17 @@
 import QtQuick
 import Pkjviz
 
-Window {
-    width: mainScreen.width
-    height: mainScreen.height
-
+// App.qml 不再直接使用 Screen01，而是使用 main.qml
+ApplicationWindow {
+    id: appWindow
+    width: 1280
+    height: 720
     visible: true
     title: "Pkjviz"
-
-    Screen01 {
-        id: mainScreen
+    
+    // 加载主 QML 文件，其中包含所有逻辑代码
+    Loader {
+        anchors.fill: parent
+        source: "main.qml"
     }
 }
