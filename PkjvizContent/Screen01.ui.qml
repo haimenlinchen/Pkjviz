@@ -305,7 +305,9 @@ Rectangle {
 
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: switchButton.mode = 0
+                                onClicked: {
+                                    switchButton.mode = 0;
+                                }
                             }
                         }
 
@@ -324,7 +326,9 @@ Rectangle {
 
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: switchButton.mode = 1
+                                onClicked: {
+                                    switchButton.mode = 1;
+                                }
                             }
                         }
 
@@ -343,7 +347,9 @@ Rectangle {
 
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: switchButton.mode = 2
+                                onClicked: {
+                                    switchButton.mode = 2;
+                                }
                             }
                         }
                     }
@@ -556,13 +562,16 @@ Rectangle {
 
                         // 文件列表
                         ListView {
+                            id: fileListView
                             Layout.fillWidth: true
                             Layout.fillHeight: switchButton.mode !== 2 ? true : true / 2
                             model: ["📁 src", "  📄 main.py", "  📄 utils.py", "📁 tests", "  📄 test_main.py", "📁 docs", "  📄 README.md"]
+                            property var selectedItems: []
                             delegate: Rectangle {
                                 width: parent.width
                                 height: 25
-                                color: "transparent"
+                                color: fileListView.selectedItems.includes(index) ? "#3a3d3e" : "transparent"
+                                property bool isSelected: fileListView.selectedItems.includes(index)
 
                                 RowLayout {
                                     anchors.fill: parent
@@ -586,8 +595,99 @@ Rectangle {
                                     id: fileItemMouseArea
                                     anchors.fill: parent
                                     hoverEnabled: true
-                                    onEntered: parent.color = "#2a2d2e"
-                                    onExited: parent.color = "transparent"
+                                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                                    onEntered: parent.color = isSelected ? "#3a3d3e" : "#2a2d2e"
+                                    onExited: parent.color = isSelected ? "#3a3d3e" : "transparent"
+                                    onClicked: {
+                                        if (mouse.button === Qt.LeftButton) {
+                                            if (mouse.modifiers & Qt.ControlModifier) {
+                                                // Ctrl+点击：添加或移除选择
+                                                if (isSelected) {
+                                                    // 移除当前项
+                                                    var newSelection = [];
+                                                    for (var i = 0; i < fileListView.selectedItems.length; i++) {
+                                                        if (fileListView.selectedItems[i] !== index) {
+                                                            newSelection.push(fileListView.selectedItems[i]);
+                                                        }
+                                                    }
+                                                    fileListView.selectedItems = newSelection;
+                                                } else {
+                                                    // 添加当前项
+                                                    var newSelection = fileListView.selectedItems.slice();
+                                                    newSelection.push(index);
+                                                    fileListView.selectedItems = newSelection;
+                                                }
+                                            } else {
+                                                // 普通点击：仅选择当前项
+                                                fileListView.selectedItems = [index];
+                                            }
+                                        } else if (mouse.button === Qt.RightButton) {
+                                            // 如果右击的项不在选择中，则单独选择它
+                                            if (!isSelected) {
+                                                fileListView.selectedItems = [index];
+                                            }
+                                            fileContextMenu.x = mouse.x;
+                                            fileContextMenu.y = mouse.y;
+                                            fileContextMenu.open();
+                                        }
+                                    }
+                                }
+                            }
+
+                            // 文件上下文菜单
+                            Menu {
+                                id: fileContextMenu
+                                background: Rectangle {
+                                    implicitWidth: 160
+                                    color: "#252526"
+                                    border.color: "#3c3c3c"
+                                    border.width: 1
+                                    radius: 3
+                                }
+
+                                MenuItem {
+                                    text: "重命名"
+                                    height: 30
+                                    background: Rectangle {
+                                        color: parent.hovered ? "#2a2d2e" : "transparent"
+                                    }
+                                    contentItem: Text {
+                                        text: parent.text
+                                        color: "#cccccc"
+                                        font.pixelSize: 12
+                                        leftPadding: 8
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                }
+
+                                MenuItem {
+                                    text: "删除"
+                                    height: 30
+                                    background: Rectangle {
+                                        color: parent.hovered ? "#2a2d2e" : "transparent"
+                                    }
+                                    contentItem: Text {
+                                        text: parent.text
+                                        color: "#cccccc"
+                                        font.pixelSize: 12
+                                        leftPadding: 8
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                }
+
+                                MenuItem {
+                                    text: fileListView.selectedItems.length > 1 ? "对选择项进行比较" : "选择以进行比较"
+                                    height: 30
+                                    background: Rectangle {
+                                        color: parent.hovered ? "#2a2d2e" : "transparent"
+                                    }
+                                    contentItem: Text {
+                                        text: parent.text
+                                        color: "#cccccc"
+                                        font.pixelSize: 12
+                                        leftPadding: 8
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
                                 }
                             }
                         }
@@ -717,207 +817,209 @@ Rectangle {
                     Layout.fillHeight: true
                     color: "#1e1e1e"
 
-                    ColumnLayout {
+                    // 使用SplitViewManager替换原来的编辑器实现
+                    EditorSplitViewManager {
+                        id: splitViewManager
                         anchors.fill: parent
-                        spacing: 0
+                        anchors.bottomMargin: onlineTools.visible ? onlineTools.height : 0
+                    }
 
-                        // 标签页
-                        TabBar {
-                            id: tabBar
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 30
-                            background: Rectangle {
-                                color: "#333333"
-                            }
+                    // 在线/离线模式下的工具区域
+                    Rectangle {
+                        id: onlineTools
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        height: (switchButton.mode === 0 || switchButton.mode === 1) ? (isCollapsed ? 30 : (switchButton.mode === 0 ? (editorsCollapsed ? 30 : onlineToolsResizeHandle.toolsHeight) : (onlineToolsCollapsed ? 30 : onlineToolsResizeHandle.toolsHeight))) : 0
+                        color: "#1e1e1e"
+                        visible: switchButton.mode === 0 || switchButton.mode === 1  // 在离线或在线模式下显示
 
-                            TabButton {
-                                text: "文件1.py"
-                                width: 120
-                                height: 30
-                                background: Rectangle {
-                                    color: parent.checked ? "#4a4a4a" : "transparent"
-                                }
-                                contentItem: Text {
-                                    text: parent.text
-                                    color: "#cccccc"
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
-                                }
-                            }
+                        // 添加属性来存储和记忆发包工具的高度
+                        property alias resizeHandle: onlineToolsResizeHandle
+                        property bool isCollapsed: false  // 是否收起
 
-                            TabButton {
-                                text: "文件2.py"
-                                width: 120
-                                height: 30
-                                background: Rectangle {
-                                    color: parent.checked ? "#4a4a4a" : "transparent"
-                                }
-                                contentItem: Text {
-                                    text: parent.text
-                                    color: "#cccccc"
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
-                                }
-                            }
+                        // 全局收起状态控制，用于同时控制寄存器数据编辑器和log编辑器
+                        property bool editorsCollapsed: false
 
-                            TabButton {
-                                text: "文件3.py"
-                                width: 120
-                                height: 30
-                                background: Rectangle {
-                                    color: parent.checked ? "#4a4a4a" : "transparent"
-                                }
-                                contentItem: Text {
-                                    text: parent.text
-                                    color: "#cccccc"
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
-                                }
-                            }
-                        }
+                        // 在线模式下的可用设备和发包工具收起状态
+                        property bool onlineToolsCollapsed: false
 
-                        // 编辑器
-                        TextArea {
-                            id: editorTextArea
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            Layout.minimumHeight: 150 // 确保编辑器区域有合理的最小高度
-                            clip: true
-                            color: "#cccccc"
-                            background: Rectangle {
-                                color: "transparent"
-                            }
-                            placeholderText: "在此输入代码..."
-                            font.family: "Consolas"
-                            font.pixelSize: 14
+                        // 当前选中的设备
+                        property string selectedDevice: ""
 
-                            // 当编辑器获得焦点时，确保有足够的空间显示文本
-                            focus: true
-                            // 使用属性绑定而不是JavaScript块
-                            property bool shouldAdjustHeight: focus && switchButton.checked && onlineToolsResizeHandle.toolsHeight > editorArea.height - 200
-                            onShouldAdjustHeightChanged: if (shouldAdjustHeight)
-                                onlineToolsResizeHandle.toolsHeight = Math.max(onlineToolsResizeHandle.minHeight, editorArea.height - 200)
-                        }
-
-                        // 在线/离线模式下的工具区域
+                        // 收起/展开按钮
                         Rectangle {
-                            id: onlineTools
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: (switchButton.mode === 0 || switchButton.mode === 1) ? (isCollapsed ? 30 : (switchButton.mode === 0 ? (editorsCollapsed ? 30 : onlineToolsResizeHandle.toolsHeight) : (onlineToolsCollapsed ? 30 : onlineToolsResizeHandle.toolsHeight))) : 0
-                            color: "#1e1e1e"
-                            visible: switchButton.mode === 0 || switchButton.mode === 1  // 在离线或在线模式下显示
+                            id: collapseButton
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.margins: 5
+                            width: 20
+                            height: 20
+                            color: "transparent"
 
-                            // 添加属性来存储和记忆发包工具的高度
-                            property alias resizeHandle: onlineToolsResizeHandle
-                            property bool isCollapsed: false  // 是否收起
-
-                            // 全局收起状态控制，用于同时控制寄存器数据编辑器和log编辑器
-                            property bool editorsCollapsed: false
-
-                            // 在线模式下的可用设备和发包工具收起状态
-                            property bool onlineToolsCollapsed: false
-
-                            // 当前选中的设备
-                            property string selectedDevice: ""
-
-                            // 收起/展开按钮
-                            Rectangle {
-                                id: collapseButton
-                                anchors.right: parent.right
-                                anchors.top: parent.top
-                                anchors.margins: 5
-                                width: 20
-                                height: 20
-                                color: "transparent"
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    color: "#cccccc"
-                                    text: onlineTools.isCollapsed ? "▼" : "▲"
-                                    font.pixelSize: 12
-                                }
-
-                                MouseArea {
-                                    id: collapseMouseArea
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: onlineTools.isCollapsed = !onlineTools.isCollapsed
-                                }
+                            Text {
+                                anchors.centerIn: parent
+                                color: "#cccccc"
+                                text: onlineTools.isCollapsed ? "▼" : "▲"
+                                font.pixelSize: 12
                             }
 
-                            // 全局编辑器收起/展开按钮
-                            Rectangle {
-                                id: editorsCollapseButton
-                                anchors.right: collapseButton.left
-                                anchors.top: parent.top
-                                anchors.margins: 5
-                                width: 20
-                                height: 20
-                                color: "transparent"
-                                visible: !onlineTools.isCollapsed && switchButton.mode === 0 // 只在离线模式且整个工具区未收起时显示
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    color: "#cccccc"
-                                    text: onlineTools.editorsCollapsed ? "▼" : "▲"
-                                    font.pixelSize: 12
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: onlineTools.editorsCollapsed = !onlineTools.editorsCollapsed
-                                }
-                            }
-
-                            // 在线工具收起/展开按钮
-                            Rectangle {
-                                id: onlineToolsCollapseButton
-                                anchors.right: collapseButton.left
-                                anchors.top: parent.top
-                                anchors.margins: 5
-                                width: 20
-                                height: 20
-                                color: "transparent"
-                                visible: !onlineTools.isCollapsed && switchButton.mode === 1 // 只在在线模式且整个工具区未收起时显示
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    color: "#cccccc"
-                                    text: onlineTools.onlineToolsCollapsed ? "▼" : "▲"
-                                    font.pixelSize: 12
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: onlineTools.onlineToolsCollapsed = !onlineTools.onlineToolsCollapsed
-                                }
-                            }
-
-                            RowLayout {
+                            MouseArea {
+                                id: collapseMouseArea
                                 anchors.fill: parent
-                                spacing: 0
-                                visible: !onlineTools.isCollapsed
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    onlineTools.isCollapsed = !onlineTools.isCollapsed;
+                                }
+                            }
+                        }
 
-                                // 左侧区域 - 在线模式时为设备列表，离线模式时为寄存器数据编辑器
-                                Rectangle {
-                                    Layout.preferredWidth: parent.width * 0.3
-                                    Layout.fillHeight: true
-                                    color: "#252526"
+                        // 全局编辑器收起/展开按钮
+                        Rectangle {
+                            id: editorsCollapseButton
+                            anchors.right: collapseButton.left
+                            anchors.top: parent.top
+                            anchors.margins: 5
+                            width: 20
+                            height: 20
+                            color: "transparent"
+                            visible: !onlineTools.isCollapsed && switchButton.mode === 0 // 只在离线模式且整个工具区未收起时显示
+
+                            Text {
+                                anchors.centerIn: parent
+                                color: "#cccccc"
+                                text: onlineTools.editorsCollapsed ? "▼" : "▲"
+                                font.pixelSize: 12
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    onlineTools.editorsCollapsed = !onlineTools.editorsCollapsed;
+                                }
+                            }
+                        }
+
+                        // 在线工具收起/展开按钮
+                        Rectangle {
+                            id: onlineToolsCollapseButton
+                            anchors.right: collapseButton.left
+                            anchors.top: parent.top
+                            anchors.margins: 5
+                            width: 20
+                            height: 20
+                            color: "transparent"
+                            visible: !onlineTools.isCollapsed && switchButton.mode === 1 // 只在在线模式且整个工具区未收起时显示
+
+                            Text {
+                                anchors.centerIn: parent
+                                color: "#cccccc"
+                                text: onlineTools.onlineToolsCollapsed ? "▼" : "▲"
+                                font.pixelSize: 12
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    onlineTools.onlineToolsCollapsed = !onlineTools.onlineToolsCollapsed;
+                                }
+                            }
+                        }
+
+                        RowLayout {
+                            anchors.fill: parent
+                            spacing: 0
+                            visible: !onlineTools.isCollapsed
+
+                            // 左侧区域 - 在线模式时为设备列表，离线模式时为寄存器数据编辑器
+                            Rectangle {
+                                Layout.preferredWidth: parent.width * 0.3
+                                Layout.fillHeight: true
+                                color: "#252526"
+                                Layout.preferredHeight: onlineTools.editorsCollapsed ? 30 : onlineToolsResizeHandle.toolsHeight
+
+                                // 离线模式的寄存器数据编辑器
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    spacing: 0
+                                    visible: switchButton.mode === 0
                                     Layout.preferredHeight: onlineTools.editorsCollapsed ? 30 : onlineToolsResizeHandle.toolsHeight
 
-                                    // 离线模式的寄存器数据编辑器
+                                    // 寄存器编辑器标题
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 30
+                                        color: "#2b2b2b"
+
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.leftMargin: 10
+                                            anchors.rightMargin: 10
+                                            spacing: 5
+
+                                            Text {
+                                                Layout.alignment: Qt.AlignVCenter
+                                                color: "#cccccc"
+                                                text: "寄存器数据编辑器" + (onlineTools.editorsCollapsed ? " (已收起)" : "")
+                                                font.bold: true
+                                            }
+
+                                            Item {
+                                                Layout.fillWidth: true
+                                            }
+
+                                            ToolButton {
+                                                Layout.preferredWidth: 20
+                                                Layout.preferredHeight: 20
+                                                text: onlineTools.editorsCollapsed ? "▼" : "▲"
+                                                font.pixelSize: 14
+                                                background: Rectangle {
+                                                    color: parent.pressed ? "#4a4a4a" : "transparent"
+                                                }
+                                                contentItem: Text {
+                                                    text: parent.text
+                                                    color: "#cccccc"
+                                                    horizontalAlignment: Text.AlignHCenter
+                                                    verticalAlignment: Text.AlignVCenter
+                                                }
+                                                onClicked: onlineTools.editorsCollapsed = !onlineTools.editorsCollapsed
+                                            }
+                                        }
+                                    }
+
+                                    // 寄存器编辑区域
+                                    TextArea {
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
+                                        Layout.margins: 5
+                                        visible: !onlineTools.editorsCollapsed
+                                        color: "#cccccc"
+                                        background: Rectangle {
+                                            color: "#1e1e1e"
+                                        }
+                                        placeholderText: "输入寄存器数据...\n例如:\nEAX=0x00000001\nEBX=0x00000002"
+                                        font.family: "Consolas"
+                                        font.pixelSize: 14
+                                    }
+                                }
+
+                                // 在线模式下的占位组件
+                                Rectangle {
+                                    anchors.fill: parent
+                                    color: "#252526"
+                                    visible: switchButton.mode === 1
+
+                                    // 可用设备列表窗口
                                     ColumnLayout {
                                         anchors.fill: parent
                                         spacing: 0
-                                        visible: switchButton.mode === 0
-                                        Layout.preferredHeight: onlineTools.editorsCollapsed ? 30 : onlineToolsResizeHandle.toolsHeight
 
-                                        // 寄存器编辑器标题
+                                        // 设备列表标题
                                         Rectangle {
                                             Layout.fillWidth: true
                                             Layout.preferredHeight: 30
@@ -932,7 +1034,7 @@ Rectangle {
                                                 Text {
                                                     Layout.alignment: Qt.AlignVCenter
                                                     color: "#cccccc"
-                                                    text: "寄存器数据编辑器" + (onlineTools.editorsCollapsed ? " (已收起)" : "")
+                                                    text: "可用设备"
                                                     font.bold: true
                                                 }
 
@@ -943,7 +1045,7 @@ Rectangle {
                                                 ToolButton {
                                                     Layout.preferredWidth: 20
                                                     Layout.preferredHeight: 20
-                                                    text: onlineTools.editorsCollapsed ? "▼" : "▲"
+                                                    text: "⟳"
                                                     font.pixelSize: 14
                                                     background: Rectangle {
                                                         color: parent.pressed ? "#4a4a4a" : "transparent"
@@ -954,43 +1056,23 @@ Rectangle {
                                                         horizontalAlignment: Text.AlignHCenter
                                                         verticalAlignment: Text.AlignVCenter
                                                     }
-                                                    onClicked: onlineTools.editorsCollapsed = !onlineTools.editorsCollapsed
                                                 }
                                             }
                                         }
 
-                                        // 寄存器编辑区域
-                                        TextArea {
+                                        // 设备列表
+                                        ListView {
+                                            id: deviceListView
                                             Layout.fillWidth: true
                                             Layout.fillHeight: true
-                                            Layout.margins: 5
-                                            visible: !onlineTools.editorsCollapsed
-                                            color: "#cccccc"
-                                            background: Rectangle {
-                                                color: "#1e1e1e"
-                                            }
-                                            placeholderText: "输入寄存器数据...\n例如:\nEAX=0x00000001\nEBX=0x00000002"
-                                            font.family: "Consolas"
-                                            font.pixelSize: 14
-                                        }
-                                    }
-
-                                    // 在线模式下的占位组件
-                                    Rectangle {
-                                        anchors.fill: parent
-                                        color: "#252526"
-                                        visible: switchButton.mode === 1
-
-                                        // 可用设备列表窗口
-                                        ColumnLayout {
-                                            anchors.fill: parent
+                                            model: ["设备1 (192.168.1.1)", "设备2 (192.168.1.2)", "设备3 (192.168.1.3)"]
+                                            currentIndex: -1
+                                            clip: true
                                             spacing: 0
-
-                                            // 设备列表标题
-                                            Rectangle {
-                                                Layout.fillWidth: true
-                                                Layout.preferredHeight: 30
-                                                color: "#2b2b2b"
+                                            delegate: Rectangle {
+                                                width: parent.width
+                                                height: 35
+                                                color: ListView.isCurrentItem ? "#2a2d2e" : "transparent"
 
                                                 RowLayout {
                                                     anchors.fill: parent
@@ -998,11 +1080,18 @@ Rectangle {
                                                     anchors.rightMargin: 10
                                                     spacing: 5
 
+                                                    Rectangle {
+                                                        width: 8
+                                                        height: 8
+                                                        radius: 4
+                                                        color: "#4caf50" // 在线状态指示
+                                                    }
+
                                                     Text {
                                                         Layout.alignment: Qt.AlignVCenter
                                                         color: "#cccccc"
-                                                        text: "可用设备"
-                                                        font.bold: true
+                                                        text: modelData
+                                                        font.family: "Consolas"
                                                     }
 
                                                     Item {
@@ -1010,238 +1099,181 @@ Rectangle {
                                                     }
 
                                                     ToolButton {
+                                                        id: arrowButton
                                                         Layout.preferredWidth: 20
                                                         Layout.preferredHeight: 20
-                                                        text: "⟳"
-                                                        font.pixelSize: 14
+                                                        text: "→"
+                                                        font.pixelSize: 12
                                                         background: Rectangle {
-                                                            color: parent.pressed ? "#4a4a4a" : "transparent"
+                                                            color: arrowMouseArea.pressed ? "#4a4a4a" : "transparent"
+                                                            radius: 2
                                                         }
                                                         contentItem: Text {
                                                             text: parent.text
-                                                            color: "#cccccc"
+                                                            color: "#0d6efd"
                                                             horizontalAlignment: Text.AlignHCenter
                                                             verticalAlignment: Text.AlignVCenter
                                                         }
+
+                                                        MouseArea {
+                                                            id: arrowMouseArea
+                                                            anchors.fill: parent
+                                                        }
                                                     }
                                                 }
+
+                                                MouseArea {
+                                                    id: deviceListItemMouseArea
+                                                    anchors.fill: parent
+                                                    anchors.rightMargin: 20  // 为右侧箭头按钮留出空间
+                                                    hoverEnabled: true
+                                                    acceptedButtons: Qt.LeftButton
+                                                    onEntered: if (!ListView.isCurrentItem)
+                                                        parent.color = "#2a2d2e"
+                                                    onExited: if (!ListView.isCurrentItem)
+                                                        parent.color = "transparent"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // 分割线
+                            Rectangle {
+                                Layout.preferredWidth: 1
+                                Layout.fillHeight: true
+                                color: "#333333"
+                            }
+
+                            // 右侧区域 - 在线模式时为发包工具，离线模式时为log编辑器
+                            Rectangle {
+                                id: rightPanelArea
+                                Layout.preferredWidth: parent.width * 0.7
+                                Layout.fillHeight: true
+                                color: "#252526"
+
+                                // 在线模式的发包工具
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    spacing: 0
+                                    visible: switchButton.mode === 1
+                                    Layout.preferredHeight: onlineTools.onlineToolsCollapsed ? 30 : onlineToolsResizeHandle.toolsHeight
+
+                                    // 发包工具标题
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 30
+                                        color: "#2b2b2b"
+
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.leftMargin: 10
+                                            anchors.rightMargin: 10
+                                            spacing: 5
+
+                                            Text {
+                                                Layout.alignment: Qt.AlignVCenter
+                                                color: "#cccccc"
+                                                text: "发包工具" + (onlineTools.onlineToolsCollapsed ? " (已收起)" : "")
+                                                font.bold: true
                                             }
 
-                                            // 设备列表
-                                            ListView {
-                                                id: deviceListView
+                                            Item {
                                                 Layout.fillWidth: true
-                                                Layout.fillHeight: true
-                                                model: ["设备1 (192.168.1.1)", "设备2 (192.168.1.2)", "设备3 (192.168.1.3)"]
-                                                currentIndex: -1
-                                                clip: true
-                                                spacing: 0
-                                                delegate: Rectangle {
-                                                    width: parent.width
-                                                    height: 35
-                                                    color: ListView.isCurrentItem ? "#2a2d2e" : "transparent"
+                                            }
 
-                                                    RowLayout {
-                                                        anchors.fill: parent
-                                                        anchors.leftMargin: 10
-                                                        anchors.rightMargin: 10
-                                                        spacing: 5
-
-                                                        Rectangle {
-                                                            width: 8
-                                                            height: 8
-                                                            radius: 4
-                                                            color: "#4caf50" // 在线状态指示
-                                                        }
-
-                                                        Text {
-                                                            Layout.alignment: Qt.AlignVCenter
-                                                            color: "#cccccc"
-                                                            text: modelData
-                                                            font.family: "Consolas"
-                                                        }
-
-                                                        Item {
-                                                            Layout.fillWidth: true
-                                                        }
-
-                                                        ToolButton {
-                                                            id: arrowButton
-                                                            Layout.preferredWidth: 20
-                                                            Layout.preferredHeight: 20
-                                                            text: "→"
-                                                            font.pixelSize: 12
-                                                            background: Rectangle {
-                                                                color: arrowMouseArea.pressed ? "#4a4a4a" : "transparent"
-                                                                radius: 2
-                                                            }
-                                                            contentItem: Text {
-                                                                text: parent.text
-                                                                color: "#0d6efd"
-                                                                horizontalAlignment: Text.AlignHCenter
-                                                                verticalAlignment: Text.AlignVCenter
-                                                            }
-
-                                                            MouseArea {
-                                                                id: arrowMouseArea
-                                                                anchors.fill: parent
-                                                            }
-                                                        }
-                                                    }
-
-                                                    MouseArea {
-                                                        id: deviceListItemMouseArea
-                                                        anchors.fill: parent
-                                                        anchors.rightMargin: 20  // 为右侧箭头按钮留出空间
-                                                        hoverEnabled: true
-                                                        acceptedButtons: Qt.LeftButton
-                                                        onEntered: if (!ListView.isCurrentItem)
-                                                            parent.color = "#2a2d2e"
-                                                        onExited: if (!ListView.isCurrentItem)
-                                                            parent.color = "transparent"
-                                                    }
+                                            ToolButton {
+                                                Layout.preferredWidth: 20
+                                                Layout.preferredHeight: 20
+                                                text: onlineTools.onlineToolsCollapsed ? "▼" : "▲"
+                                                font.pixelSize: 14
+                                                background: Rectangle {
+                                                    color: parent.pressed ? "#4a4a4a" : "transparent"
                                                 }
+                                                contentItem: Text {
+                                                    text: parent.text
+                                                    color: "#cccccc"
+                                                    horizontalAlignment: Text.AlignHCenter
+                                                    verticalAlignment: Text.AlignVCenter
+                                                }
+                                                onClicked: onlineTools.onlineToolsCollapsed = !onlineTools.onlineToolsCollapsed
                                             }
                                         }
                                     }
+
+                                    // 发包工具内容 - 使用我们的PacketSender组件
+                                    PacketSender {
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
+                                        Layout.margins: 2
+                                        visible: !onlineTools.onlineToolsCollapsed
+                                        designerPreviewNarrow: true
+                                    }
                                 }
 
-                                // 分割线
-                                Rectangle {
-                                    Layout.preferredWidth: 1
-                                    Layout.fillHeight: true
-                                    color: "#333333"
-                                }
+                                // 离线模式的log编辑器
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    spacing: 0
+                                    visible: switchButton.mode === 0
+                                    Layout.preferredHeight: onlineTools.editorsCollapsed ? 30 : onlineToolsResizeHandle.toolsHeight
 
-                                // 右侧区域 - 在线模式时为发包工具，离线模式时为log编辑器
-                                Rectangle {
-                                    id: rightPanelArea
-                                    Layout.preferredWidth: parent.width * 0.7
-                                    Layout.fillHeight: true
-                                    color: "#252526"
+                                    // Log编辑器标题
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 30
+                                        color: "#2b2b2b"
 
-                                    // 在线模式的发包工具
-                                    ColumnLayout {
-                                        anchors.fill: parent
-                                        spacing: 0
-                                        visible: switchButton.mode === 1
-                                        Layout.preferredHeight: onlineTools.onlineToolsCollapsed ? 30 : onlineToolsResizeHandle.toolsHeight
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.leftMargin: 10
+                                            anchors.rightMargin: 10
+                                            spacing: 5
 
-                                        // 发包工具标题
-                                        Rectangle {
-                                            Layout.fillWidth: true
-                                            Layout.preferredHeight: 30
-                                            color: "#2b2b2b"
-
-                                            RowLayout {
-                                                anchors.fill: parent
-                                                anchors.leftMargin: 10
-                                                anchors.rightMargin: 10
-                                                spacing: 5
-
-                                                Text {
-                                                    Layout.alignment: Qt.AlignVCenter
-                                                    color: "#cccccc"
-                                                    text: "发包工具" + (onlineTools.onlineToolsCollapsed ? " (已收起)" : "")
-                                                    font.bold: true
-                                                }
-
-                                                Item {
-                                                    Layout.fillWidth: true
-                                                }
-
-                                                ToolButton {
-                                                    Layout.preferredWidth: 20
-                                                    Layout.preferredHeight: 20
-                                                    text: onlineTools.onlineToolsCollapsed ? "▼" : "▲"
-                                                    font.pixelSize: 14
-                                                    background: Rectangle {
-                                                        color: parent.pressed ? "#4a4a4a" : "transparent"
-                                                    }
-                                                    contentItem: Text {
-                                                        text: parent.text
-                                                        color: "#cccccc"
-                                                        horizontalAlignment: Text.AlignHCenter
-                                                        verticalAlignment: Text.AlignVCenter
-                                                    }
-                                                    onClicked: onlineTools.onlineToolsCollapsed = !onlineTools.onlineToolsCollapsed
-                                                }
+                                            Text {
+                                                Layout.alignment: Qt.AlignVCenter
+                                                color: "#cccccc"
+                                                text: "Log编辑器" + (onlineTools.editorsCollapsed ? " (已收起)" : "")
+                                                font.bold: true
                                             }
-                                        }
 
-                                        // 发包工具内容 - 使用我们的PacketSender组件
-                                        PacketSender {
-                                            Layout.fillWidth: true
-                                            Layout.fillHeight: true
-                                            Layout.margins: 2
-                                            visible: !onlineTools.onlineToolsCollapsed
-                                            designerPreviewNarrow: true
+                                            Item {
+                                                Layout.fillWidth: true
+                                            }
+
+                                            ToolButton {
+                                                Layout.preferredWidth: 20
+                                                Layout.preferredHeight: 20
+                                                text: onlineTools.editorsCollapsed ? "▼" : "▲"
+                                                font.pixelSize: 14
+                                                background: Rectangle {
+                                                    color: parent.pressed ? "#4a4a4a" : "transparent"
+                                                }
+                                                contentItem: Text {
+                                                    text: parent.text
+                                                    color: "#cccccc"
+                                                    horizontalAlignment: Text.AlignHCenter
+                                                    verticalAlignment: Text.AlignVCenter
+                                                }
+                                                onClicked: onlineTools.editorsCollapsed = !onlineTools.editorsCollapsed
+                                            }
                                         }
                                     }
 
-                                    // 离线模式的log编辑器
-                                    ColumnLayout {
-                                        anchors.fill: parent
-                                        spacing: 0
-                                        visible: switchButton.mode === 0
-                                        Layout.preferredHeight: onlineTools.editorsCollapsed ? 30 : onlineToolsResizeHandle.toolsHeight
-
-                                        // Log编辑器标题
-                                        Rectangle {
-                                            Layout.fillWidth: true
-                                            Layout.preferredHeight: 30
-                                            color: "#2b2b2b"
-
-                                            RowLayout {
-                                                anchors.fill: parent
-                                                anchors.leftMargin: 10
-                                                anchors.rightMargin: 10
-                                                spacing: 5
-
-                                                Text {
-                                                    Layout.alignment: Qt.AlignVCenter
-                                                    color: "#cccccc"
-                                                    text: "Log编辑器" + (onlineTools.editorsCollapsed ? " (已收起)" : "")
-                                                    font.bold: true
-                                                }
-
-                                                Item {
-                                                    Layout.fillWidth: true
-                                                }
-
-                                                ToolButton {
-                                                    Layout.preferredWidth: 20
-                                                    Layout.preferredHeight: 20
-                                                    text: onlineTools.editorsCollapsed ? "▼" : "▲"
-                                                    font.pixelSize: 14
-                                                    background: Rectangle {
-                                                        color: parent.pressed ? "#4a4a4a" : "transparent"
-                                                    }
-                                                    contentItem: Text {
-                                                        text: parent.text
-                                                        color: "#cccccc"
-                                                        horizontalAlignment: Text.AlignHCenter
-                                                        verticalAlignment: Text.AlignVCenter
-                                                    }
-                                                    onClicked: onlineTools.editorsCollapsed = !onlineTools.editorsCollapsed
-                                                }
-                                            }
+                                    // Log编辑区域
+                                    TextArea {
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
+                                        Layout.margins: 5
+                                        visible: !onlineTools.editorsCollapsed
+                                        color: "#cccccc"
+                                        background: Rectangle {
+                                            color: "#1e1e1e"
                                         }
-
-                                        // Log编辑区域
-                                        TextArea {
-                                            Layout.fillWidth: true
-                                            Layout.fillHeight: true
-                                            Layout.margins: 5
-                                            visible: !onlineTools.editorsCollapsed
-                                            color: "#cccccc"
-                                            background: Rectangle {
-                                                color: "#1e1e1e"
-                                            }
-                                            placeholderText: "在此输入日志数据...\n可用于模拟系统日志输出"
-                                            font.family: "Consolas"
-                                            font.pixelSize: 14
-                                        }
+                                        placeholderText: "在此输入日志数据...\n可用于模拟系统日志输出"
+                                        font.family: "Consolas"
+                                        font.pixelSize: 14
                                     }
                                 }
                             }
@@ -1906,7 +1938,7 @@ Rectangle {
     // 连接按钮信号
     Connections {
         target: cancelButton
-        function onClicked() {
+        onClicked: {
             connectionDialog.visible = false;
             deviceListView.currentIndex = -1;
         }
@@ -1914,40 +1946,40 @@ Rectangle {
 
     Connections {
         target: connectButton
-        function onClicked() {
+        onClicked: {
             connectionDialog.visible = false;
         }
     }
 
     Connections {
         target: collapseMouseArea
-        function onClicked() {
+        onClicked: {
             onlineTools.isCollapsed = !onlineTools.isCollapsed;
         }
     }
 
     Connections {
         target: editorsCollapseButton.MouseArea
-        function onClicked() {
+        onClicked: {
             onlineTools.editorsCollapsed = !onlineTools.editorsCollapsed;
         }
     }
 
     Connections {
         target: onlineToolsCollapseButton.MouseArea
-        function onClicked() {
+        onClicked: {
             onlineTools.onlineToolsCollapsed = !onlineTools.onlineToolsCollapsed;
         }
     }
 
     Connections {
         target: mouseArea
-        function onNewHeightChanged() {
+        onNewHeightChanged: {
             if (mouseArea.isDragging)
                 onlineToolsResizeHandle.toolsHeight = mouseArea.newHeight;
         }
 
-        function onPressedChanged() {
+        onPressedChanged: {
             if (!mouseArea.pressed)
                 onlineToolsResizeHandle.y = 0;
         }
@@ -1955,7 +1987,7 @@ Rectangle {
 
     Connections {
         target: deviceListItemMouseArea
-        function onClicked(mouse) {
+        onClicked: {
             deviceListView.currentIndex = index;
             connectionDialog.visible = true;
             connectionDialog.deviceName = modelData;
@@ -1964,7 +1996,7 @@ Rectangle {
 
     Connections {
         target: arrowMouseArea
-        function onClicked(mouse) {
+        onClicked: {
             var item = deviceListView.itemAt(mouse.x, mouse.y);
             if (item) {
                 var index = deviceListView.indexAt(mouse.x, mouse.y);
@@ -1978,8 +2010,7 @@ Rectangle {
     // 添加Connections对象来处理returnPressed信号
     Connections {
         target: commandInput
-        // Qt 5.15及以上使用function on<SignalName>格式
-        function onAccepted() {
+        onAccepted: {
             if (commandInput.text.trim() !== "") {
                 terminalTextArea.text += "$ " + commandInput.text + "\n";
                 // 这里可以添加命令执行逻辑
