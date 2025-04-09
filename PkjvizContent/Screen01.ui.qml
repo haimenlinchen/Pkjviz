@@ -583,6 +583,7 @@ Rectangle {
                                 }
 
                                 MouseArea {
+                                    id: fileItemMouseArea
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     onEntered: parent.color = "#2a2d2e"
@@ -909,104 +910,6 @@ Rectangle {
                                     color: "#252526"
                                     Layout.preferredHeight: onlineTools.editorsCollapsed ? 30 : onlineToolsResizeHandle.toolsHeight
 
-                                    // 在线模式的设备列表
-                                    ColumnLayout {
-                                        anchors.fill: parent
-                                        spacing: 0
-                                        visible: switchButton.mode === 1
-                                        Layout.preferredHeight: onlineTools.onlineToolsCollapsed ? 30 : onlineToolsResizeHandle.toolsHeight
-
-                                        // 设备列表标题
-                                        Rectangle {
-                                            Layout.fillWidth: true
-                                            Layout.preferredHeight: 30
-                                            color: "#2b2b2b"
-
-                                            RowLayout {
-                                                anchors.fill: parent
-                                                anchors.leftMargin: 10
-                                                anchors.rightMargin: 10
-                                                spacing: 5
-
-                                                Text {
-                                                    Layout.alignment: Qt.AlignVCenter
-                                                    color: "#cccccc"
-                                                    text: "可用设备" + (onlineTools.onlineToolsCollapsed ? " (已收起)" : "")
-                                                    font.bold: true
-                                                }
-
-                                                Item {
-                                                    Layout.fillWidth: true
-                                                }
-
-                                                ToolButton {
-                                                    Layout.preferredWidth: 20
-                                                    Layout.preferredHeight: 20
-                                                    text: onlineTools.onlineToolsCollapsed ? "▼" : "▲"
-                                                    font.pixelSize: 14
-                                                    background: Rectangle {
-                                                        color: parent.pressed ? "#4a4a4a" : "transparent"
-                                                    }
-                                                    contentItem: Text {
-                                                        text: parent.text
-                                                        color: "#cccccc"
-                                                        horizontalAlignment: Text.AlignHCenter
-                                                        verticalAlignment: Text.AlignVCenter
-                                                    }
-                                                    onClicked: onlineTools.onlineToolsCollapsed = !onlineTools.onlineToolsCollapsed
-                                                }
-                                            }
-                                        }
-
-                                        // 设备列表
-                                        ListView {
-                                            id: deviceListView
-                                            Layout.fillWidth: true
-                                            Layout.preferredHeight: 120
-                                            visible: !onlineTools.onlineToolsCollapsed
-                                            model: ["设备1 (192.168.1.1)", "设备2 (192.168.1.2)", "设备3 (192.168.1.3)"]
-                                            currentIndex: -1
-                                            interactive: true
-                                            boundsBehavior: Flickable.StopAtBounds
-                                            clip: true
-                                            spacing: 0
-                                            delegate: Rectangle {
-                                                width: parent.width
-                                                height: 25
-                                                color: ListView.isCurrentItem ? "#2a2d2e" : "transparent"
-
-                                                RowLayout {
-                                                    anchors.fill: parent
-                                                    anchors.leftMargin: 10
-                                                    anchors.rightMargin: 10
-                                                    spacing: 5
-
-                                                    Text {
-                                                        Layout.alignment: Qt.AlignVCenter
-                                                        color: "#cccccc"
-                                                        text: modelData
-                                                        font.family: "Consolas"
-                                                    }
-
-                                                    Item {
-                                                        Layout.fillWidth: true
-                                                    }
-                                                }
-
-                                                MouseArea {
-                                                    anchors.fill: parent
-                                                    hoverEnabled: true
-                                                    acceptedButtons: Qt.LeftButton
-                                                    onEntered: if (!ListView.isCurrentItem)
-                                                        parent.color = "#2a2d2e"
-                                                    onExited: if (!ListView.isCurrentItem)
-                                                        parent.color = "transparent"
-                                                    onClicked: deviceListView.currentIndex = index
-                                                }
-                                            }
-                                        }
-                                    }
-
                                     // 离线模式的寄存器数据编辑器
                                     ColumnLayout {
                                         anchors.fill: parent
@@ -1069,6 +972,129 @@ Rectangle {
                                             placeholderText: "输入寄存器数据...\n例如:\nEAX=0x00000001\nEBX=0x00000002"
                                             font.family: "Consolas"
                                             font.pixelSize: 14
+                                        }
+                                    }
+
+                                    // 在线模式下的占位组件
+                                    Rectangle {
+                                        anchors.fill: parent
+                                        color: "#252526"
+                                        visible: switchButton.mode === 1
+
+                                        // 可用设备列表窗口
+                                        ColumnLayout {
+                                            anchors.fill: parent
+                                            spacing: 0
+
+                                            // 设备列表标题
+                                            Rectangle {
+                                                Layout.fillWidth: true
+                                                Layout.preferredHeight: 30
+                                                color: "#2b2b2b"
+
+                                                RowLayout {
+                                                    anchors.fill: parent
+                                                    anchors.leftMargin: 10
+                                                    anchors.rightMargin: 10
+                                                    spacing: 5
+
+                                                    Text {
+                                                        Layout.alignment: Qt.AlignVCenter
+                                                        color: "#cccccc"
+                                                        text: "可用设备"
+                                                        font.bold: true
+                                                    }
+
+                                                    Item {
+                                                        Layout.fillWidth: true
+                                                    }
+
+                                                    ToolButton {
+                                                        Layout.preferredWidth: 20
+                                                        Layout.preferredHeight: 20
+                                                        text: "⟳"
+                                                        font.pixelSize: 14
+                                                        background: Rectangle {
+                                                            color: parent.pressed ? "#4a4a4a" : "transparent"
+                                                        }
+                                                        contentItem: Text {
+                                                            text: parent.text
+                                                            color: "#cccccc"
+                                                            horizontalAlignment: Text.AlignHCenter
+                                                            verticalAlignment: Text.AlignVCenter
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            // 设备列表
+                                            ListView {
+                                                id: deviceListView
+                                                Layout.fillWidth: true
+                                                Layout.fillHeight: true
+                                                model: ["设备1 (192.168.1.1)", "设备2 (192.168.1.2)", "设备3 (192.168.1.3)"]
+                                                currentIndex: -1
+                                                clip: true
+                                                spacing: 0
+                                                delegate: Rectangle {
+                                                    width: parent.width
+                                                    height: 35
+                                                    color: ListView.isCurrentItem ? "#2a2d2e" : "transparent"
+
+                                                    RowLayout {
+                                                        anchors.fill: parent
+                                                        anchors.leftMargin: 10
+                                                        anchors.rightMargin: 10
+                                                        spacing: 5
+
+                                                        Rectangle {
+                                                            width: 8
+                                                            height: 8
+                                                            radius: 4
+                                                            color: "#4caf50" // 在线状态指示
+                                                        }
+
+                                                        Text {
+                                                            Layout.alignment: Qt.AlignVCenter
+                                                            color: "#cccccc"
+                                                            text: modelData
+                                                            font.family: "Consolas"
+                                                        }
+
+                                                        Item {
+                                                            Layout.fillWidth: true
+                                                        }
+
+                                                        ToolButton {
+                                                            Layout.preferredWidth: 20
+                                                            Layout.preferredHeight: 20
+                                                            text: "→"
+                                                            font.pixelSize: 12
+                                                            background: Rectangle {
+                                                                color: parent.pressed ? "#4a4a4a" : "transparent"
+                                                                radius: 2
+                                                            }
+                                                            contentItem: Text {
+                                                                text: parent.text
+                                                                color: "#0d6efd"
+                                                                horizontalAlignment: Text.AlignHCenter
+                                                                verticalAlignment: Text.AlignVCenter
+                                                            }
+                                                        }
+                                                    }
+
+                                                    MouseArea {
+                                                        id: deviceListItemMouseArea
+                                                        anchors.fill: parent
+                                                        hoverEnabled: true
+                                                        acceptedButtons: Qt.LeftButton
+                                                        onEntered: if (!ListView.isCurrentItem)
+                                                            parent.color = "#2a2d2e"
+                                                        onExited: if (!ListView.isCurrentItem)
+                                                            parent.color = "transparent"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -1565,146 +1591,222 @@ Rectangle {
         }
     }
 
-    // 添加设备连接窗口
+    // 添加设备连接窗口 - 显示在屏幕中央
     Rectangle {
-        id: connectionWindow
-        Layout.fillWidth: true
-        Layout.preferredHeight: 180
-        visible: deviceListView.currentIndex >= 0 && !onlineTools.onlineToolsCollapsed && switchButton.mode === 1
+        id: connectionDialog
+        width: 320
+        height: 240
+        anchors.centerIn: parent
+        visible: false
         color: "#252526"
         border.color: "#3c3c3c"
         border.width: 1
-        radius: 3
+        radius: 5
+        z: 100
 
-        // 添加阴影效果 - 使用Qt 6的方式
+        // 用于存储当前连接的设备名称
+        property string deviceName: ""
+
+        // 添加阴影效果
         layer.enabled: true
         layer.effect: MultiEffect {
             shadowEnabled: true
-            shadowColor: "#20000000"
-            shadowBlur: 6
-            shadowHorizontalOffset: 2
-            shadowVerticalOffset: 2
+            shadowColor: "#80000000"
+            shadowBlur: 12
+            shadowHorizontalOffset: 0
+            shadowVerticalOffset: 0
         }
 
         ColumnLayout {
             anchors.fill: parent
-            spacing: 0
+            spacing: 10
+            anchors.margins: 15
 
-            // 窗口标题栏
+            // 标题
+            Text {
+                Layout.fillWidth: true
+                text: "连接设备"
+                color: "#ffffff"
+                font.bold: true
+                font.pixelSize: 16
+            }
+
+            // 设备名称
+            Text {
+                Layout.fillWidth: true
+                text: "设备: " + connectionDialog.deviceName
+                color: "#cccccc"
+                font.pixelSize: 14
+                elide: Text.ElideRight
+            }
+
+            // 分隔符
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 30
-                color: "#2b2b2b"
-                radius: 3
-                // 只有顶部有圆角
-                Rectangle {
-                    width: parent.width
-                    height: parent.height / 2
-                    anchors.bottom: parent.bottom
-                    color: parent.color
+                height: 1
+                color: "#3c3c3c"
+                Layout.topMargin: 5
+                Layout.bottomMargin: 5
+            }
+
+            // 用户名
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 5
+
+                Text {
+                    text: "用户名"
+                    color: "#cccccc"
+                    font.pixelSize: 12
                 }
 
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 10
-                    anchors.rightMargin: 10
-                    spacing: 5
-
-                    Text {
-                        Layout.alignment: Qt.AlignVCenter
-                        color: "#cccccc"
-                        text: "连接设备"
-                        font.bold: true
-                    }
-
-                    Item {
-                        Layout.fillWidth: true
-                    }
-
-                    ToolButton {
-                        Layout.preferredWidth: 20
-                        Layout.preferredHeight: 20
-                        text: "×"
-                        font.pixelSize: 14
-                        background: Rectangle {
-                            color: parent.pressed ? "#4a4a4a" : "transparent"
-                        }
-                        contentItem: Text {
-                            text: parent.text
-                            color: "#cccccc"
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        onClicked: deviceListView.currentIndex = -1
+                TextField {
+                    id: usernameField
+                    Layout.fillWidth: true
+                    height: 30
+                    placeholderText: "请输入用户名"
+                    color: "#ffffff"
+                    background: Rectangle {
+                        color: "#1e1e1e"
+                        radius: 3
+                        border.width: 1
+                        border.color: "#3c3c3c"
                     }
                 }
             }
 
-            // 连接内容区域
-            Rectangle {
+            // 密码
+            ColumnLayout {
                 Layout.fillWidth: true
-                Layout.fillHeight: true
-                color: "transparent"
+                spacing: 5
 
-                ColumnLayout {
-                    anchors.fill: parent
-                    anchors.margins: 10
-                    spacing: 10
+                Text {
+                    text: "密码"
+                    color: "#cccccc"
+                    font.pixelSize: 12
+                }
 
-                    // 设备信息
-                    Text {
-                        Layout.fillWidth: true
-                        color: "#cccccc"
-                        text: "设备: " + (deviceListView.currentIndex >= 0 ? deviceListView.model[deviceListView.currentIndex] : "")
-                        font.bold: true
-                        elide: Text.ElideRight
-                    }
-
-                    // 用户名输入
-                    TextField {
-                        id: usernameField
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 30
-                        placeholderText: "用户名"
-                        color: "#cccccc"
-                        background: Rectangle {
-                            color: "#1e1e1e"
-                            radius: 2
-                        }
-                    }
-
-                    // 密码输入
-                    TextField {
-                        id: passwordField
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 30
-                        placeholderText: "密码"
-                        color: "#cccccc"
-                        echoMode: TextInput.Password
-                        background: Rectangle {
-                            color: "#1e1e1e"
-                            radius: 2
-                        }
-                    }
-
-                    // 连接按钮
-                    Button {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 30
-                        text: "连接"
-                        background: Rectangle {
-                            color: parent.pressed ? "#0d6efd" : "#0078d7"
-                            radius: 2
-                        }
-                        contentItem: Text {
-                            text: parent.text
-                            color: "#ffffff"
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
+                TextField {
+                    id: passwordField
+                    Layout.fillWidth: true
+                    height: 30
+                    placeholderText: "请输入密码"
+                    color: "#ffffff"
+                    echoMode: TextInput.Password
+                    background: Rectangle {
+                        color: "#1e1e1e"
+                        radius: 3
+                        border.width: 1
+                        border.color: "#3c3c3c"
                     }
                 }
             }
+
+            // 按钮区域
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.topMargin: 10
+                spacing: 10
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                Button {
+                    id: cancelButton
+                    text: "取消"
+                    implicitWidth: 80
+                    implicitHeight: 30
+                    background: Rectangle {
+                        color: parent.pressed ? "#333333" : "#252526"
+                        radius: 3
+                        border.width: 1
+                        border.color: "#3c3c3c"
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        color: "#cccccc"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+
+                Button {
+                    id: connectButton
+                    text: "连接"
+                    implicitWidth: 80
+                    implicitHeight: 30
+                    background: Rectangle {
+                        color: parent.pressed ? "#0d6efd" : "#0078d7"
+                        radius: 3
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        color: "#ffffff"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+            }
+        }
+    }
+
+    // 连接按钮信号
+    Connections {
+        target: cancelButton
+        function onClicked() {
+            connectionDialog.visible = false;
+            deviceListView.currentIndex = -1;
+        }
+    }
+
+    Connections {
+        target: connectButton
+        function onClicked() {
+            connectionDialog.visible = false;
+        }
+    }
+
+    Connections {
+        target: collapseMouseArea
+        function onClicked() {
+            onlineTools.isCollapsed = !onlineTools.isCollapsed;
+        }
+    }
+
+    Connections {
+        target: editorsCollapseButton.MouseArea
+        function onClicked() {
+            onlineTools.editorsCollapsed = !onlineTools.editorsCollapsed;
+        }
+    }
+
+    Connections {
+        target: onlineToolsCollapseButton.MouseArea
+        function onClicked() {
+            onlineTools.onlineToolsCollapsed = !onlineTools.onlineToolsCollapsed;
+        }
+    }
+
+    Connections {
+        target: mouseArea
+        function onNewHeightChanged() {
+            if (mouseArea.isDragging)
+                onlineToolsResizeHandle.toolsHeight = mouseArea.newHeight;
+        }
+
+        function onPressedChanged() {
+            if (!mouseArea.pressed)
+                onlineToolsResizeHandle.y = 0;
+        }
+    }
+
+    Connections {
+        target: deviceListItemMouseArea
+        function onClicked(mouse) {
+            deviceListView.currentIndex = index;
+            connectionDialog.visible = true;
+            connectionDialog.deviceName = modelData;
         }
     }
 }

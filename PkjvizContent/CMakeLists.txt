@@ -9,11 +9,11 @@ qt6_add_qml_module(PkjvizContent
     VERSION 1.0
     RESOURCE_PREFIX "/qt/qml"
     QML_FILES
+        "App.qml"
+        "ResizeHandle.qml"
         "PacketSender.qml"
         "Screen01.ui.qml"
-        "App.qml"
         "LogEditor.qml"
-        "ResizeHandle.qml"
 )
 
 
