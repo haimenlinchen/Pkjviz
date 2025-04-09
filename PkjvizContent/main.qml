@@ -479,6 +479,9 @@ Item {
         // 初始化诊断结果和内存详情
         refreshDiagnostics();
         refreshMemoryDetails();
+
+        // 初始化内存详情部分的自适应功能
+        setupMemoryDetailsAdaptability();
     }
 
     // 为TextArea添加自适应能力
@@ -812,17 +815,43 @@ Item {
                             desc: "profile index for PCP/DEI",
                             value: "0x0 | 0"
                         },
+                        // 添加更多字段用于测试自适应布局
+                        {
+                            name: "tc",
+                            desc: "traffic class mapping",
+                            value: "0x4 | 4"
+                        },
+                        {
+                            name: "dp",
+                            desc: "drop precedence mapping with long description that should wrap to multiple lines for testing purposes",
+                            value: "0x0 | 0"
+                        }
                     ]
                 },
                 {
-                    name: "DIS_RSLT_PHB_PROF",
-                    desc: "Per-Hop-Behavior QOS profile",
+                    name: "ACL_TABLE",
+                    desc: "访问控制列表表，用于存储ACL规则和过滤条件，支持IPv4和IPv6协议",
                     fields: [
                         {
-                            name: "prof_idx_pcp_dei",
-                            desc: "profile index for PCP/DEI",
-                            value: "0x0 | 0"
+                            name: "acl_id",
+                            desc: "ACL唯一标识符",
+                            value: "1001"
                         },
+                        {
+                            name: "priority",
+                            desc: "规则优先级",
+                            value: "100"
+                        },
+                        {
+                            name: "action",
+                            desc: "执行动作，可以是PERMIT、DENY或REDIRECT",
+                            value: "PERMIT"
+                        },
+                        {
+                            name: "src_ip",
+                            desc: "源IP地址",
+                            value: "192.168.1.0/24"
+                        }
                     ]
                 },
             ];
@@ -840,12 +869,81 @@ Item {
             for (var i = 0; i < selectedTable.fields.length; i++) {
                 fieldListModel.append({
                     fieldName: selectedTable.fields[i].name,
-                    fieldDesc: selectedTable.fields[i].desc,
+                    fieldDescription: selectedTable.fields[i].desc  // 注意字段名与模型匹配
+                    ,
                     fieldValue: selectedTable.fields[i].value
                 });
             }
 
-            console.log("内存详情已刷新: " + selectedTable.name);
+            console.log("内存详情已刷新: " + selectedTable.name + "，字段数量: " + selectedTable.fields.length);
+
+            // 添加延迟执行强制布局更新
+            Qt.callLater(function () {
+                var fieldListView = findChild("fieldListView");
+                if (fieldListView) {
+                    fieldListView.forceLayout();
+                }
+            });
+        }
+    }
+
+    // 字段列表项数量变化处理 - 动态调整布局
+    Connections {
+        target: findChild("fieldListView")
+        function onCountChanged() {
+            var fieldListView = findChild("fieldListView");
+            if (fieldListView) {
+                // 强制重新布局
+                fieldListView.forceLayout();
+                console.log("字段列表项数量变化，已重新布局");
+            }
+        }
+    }
+
+    // 表名和表描述文本变化时的处理
+    Connections {
+        target: findChild("tableNameText")
+        function onTextChanged() {
+            var tableNameText = findChild("tableNameText");
+            if (tableNameText) {
+                var container = tableNameText.parent;
+                if (container) {
+                    // 根据内容动态调整高度
+                    container.height = tableNameText.contentHeight + 8;
+                }
+            }
+        }
+    }
+
+    Connections {
+        target: findChild("tableDescText")
+        function onTextChanged() {
+            var tableDescText = findChild("tableDescText");
+            if (tableDescText) {
+                var container = tableDescText.parent;
+                if (container) {
+                    // 根据内容动态调整高度
+                    container.height = tableDescText.contentHeight + 10;
+                }
+            }
+        }
+    }
+
+    // 初始化内存详情部分的自适应功能
+    function setupMemoryDetailsAdaptability() {
+        // 确保字段列表项可以根据内容自适应高度
+        var fieldListView = findChild("fieldListView");
+        if (fieldListView) {
+            fieldListView.forceLayout();
+        }
+
+        // 初始调整一次表名和表描述的高度
+        var tableNameText = findChild("tableNameText");
+        var tableDescText = findChild("tableDescText");
+
+        if (tableNameText && tableDescText) {
+            tableNameText.parent.height = tableNameText.contentHeight + 8;
+            tableDescText.parent.height = tableDescText.contentHeight + 10;
         }
     }
 }

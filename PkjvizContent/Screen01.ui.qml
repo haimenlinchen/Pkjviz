@@ -1511,6 +1511,7 @@ Rectangle {
                                                     font.pixelSize: 12
                                                     text: "ACL_TABLE" // 默认值，可通过API更新
                                                     objectName: "tableNameText"
+                                                    onTextChanged: parent.height = contentHeight + 8
                                                 }
                                             }
                                         }
@@ -1547,13 +1548,16 @@ Rectangle {
                                                     wrapMode: TextEdit.Wrap
                                                     text: "访问控制列表表，用于存储ACL规则" // 默认值，可通过API更新
                                                     objectName: "tableDescText"
+                                                    onTextChanged: parent.height = contentHeight + 10
                                                 }
                                             }
                                         }
 
                                         // 字段列表
                                         ColumnLayout {
+                                            id: fieldsSection
                                             Layout.fillWidth: true
+                                            Layout.fillHeight: true
                                             spacing: 4
 
                                             Text {
@@ -1565,7 +1569,7 @@ Rectangle {
 
                                             Rectangle {
                                                 Layout.fillWidth: true
-                                                Layout.preferredHeight: 200
+                                                Layout.fillHeight: true
                                                 color: "#252526"
                                                 radius: 4
                                                 border.width: 1
@@ -1600,11 +1604,12 @@ Rectangle {
 
                                                     delegate: Rectangle {
                                                         width: parent.width
-                                                        height: 80
+                                                        height: fieldLayout.implicitHeight + 12
                                                         color: "#1e1e1e"
                                                         radius: 3
 
                                                         ColumnLayout {
+                                                            id: fieldLayout
                                                             anchors.fill: parent
                                                             anchors.margins: 6
                                                             spacing: 2
@@ -1642,13 +1647,13 @@ Rectangle {
                                                                 }
 
                                                                 Text {
+                                                                    id: descriptionText
                                                                     text: fieldDescription
                                                                     color: "#cccccc"
                                                                     font.pixelSize: 12
                                                                     Layout.fillWidth: true
                                                                     wrapMode: Text.Wrap
-                                                                    maximumLineCount: 2
-                                                                    elide: Text.ElideRight
+                                                                    maximumLineCount: 1000
                                                                 }
                                                             }
 
@@ -1669,7 +1674,8 @@ Rectangle {
                                                                     font.family: "Consolas"
                                                                     font.pixelSize: 12
                                                                     Layout.fillWidth: true
-                                                                    elide: Text.ElideRight
+                                                                    wrapMode: Text.Wrap
+                                                                    maximumLineCount: 1000
                                                                 }
                                                             }
                                                         }
