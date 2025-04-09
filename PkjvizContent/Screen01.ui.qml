@@ -1245,7 +1245,7 @@ Rectangle {
                         // 诊断结果部分
                         Rectangle {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: parent.height * 0.5
+                            Layout.preferredHeight: parent.height * 0.3
                             color: "#1e1e1e"
 
                             ColumnLayout {
@@ -1255,20 +1255,21 @@ Rectangle {
                                 // 诊断结果标题
                                 Rectangle {
                                     Layout.fillWidth: true
-                                    Layout.preferredHeight: 30
+                                    Layout.preferredHeight: 32
                                     color: "#252526"
 
                                     RowLayout {
                                         anchors.fill: parent
-                                        anchors.leftMargin: 10
-                                        anchors.rightMargin: 10
-                                        spacing: 5
+                                        anchors.leftMargin: 12
+                                        anchors.rightMargin: 12
+                                        spacing: 8
 
                                         Text {
                                             Layout.alignment: Qt.AlignVCenter
                                             color: "#cccccc"
                                             text: "诊断结果"
                                             font.bold: true
+                                            font.pixelSize: 13
                                         }
 
                                         Item {
@@ -1276,12 +1277,13 @@ Rectangle {
                                         }
 
                                         ToolButton {
-                                            Layout.preferredWidth: 20
-                                            Layout.preferredHeight: 20
+                                            Layout.preferredWidth: 24
+                                            Layout.preferredHeight: 24
                                             text: "↻"
                                             font.pixelSize: 14
                                             background: Rectangle {
-                                                color: parent.pressed ? "#4a4a4a" : "transparent"
+                                                color: parent.hovered ? "#3a3d3e" : (parent.pressed ? "#4a4a4a" : "transparent")
+                                                radius: 3
                                             }
                                             contentItem: Text {
                                                 text: parent.text
@@ -1290,6 +1292,9 @@ Rectangle {
                                                 verticalAlignment: Text.AlignVCenter
                                             }
                                             objectName: "refreshDiagnosticsButton"
+                                            ToolTip.visible: hovered
+                                            ToolTip.text: "刷新诊断信息"
+                                            ToolTip.delay: 500
                                         }
                                     }
                                 }
@@ -1302,35 +1307,38 @@ Rectangle {
 
                                     ScrollView {
                                         anchors.fill: parent
-                                        anchors.margins: 5
+                                        anchors.margins: 8
                                         clip: true
+                                        ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
                                         ColumnLayout {
                                             width: parent.width
-                                            spacing: 10
+                                            spacing: 12
 
                                             // 诊断代码部分
                                             ColumnLayout {
                                                 Layout.fillWidth: true
-                                                spacing: 5
+                                                spacing: 6
 
                                                 Text {
                                                     text: "Code:"
-                                                    color: "#0d6efd"
+                                                    color: "#0d9bfd"
                                                     font.bold: true
-                                                    font.pixelSize: 14
+                                                    font.pixelSize: 13
                                                 }
 
                                                 Rectangle {
                                                     Layout.fillWidth: true
                                                     Layout.preferredHeight: codeText.contentHeight + 10
                                                     color: "#252526"
-                                                    radius: 3
+                                                    radius: 4
+                                                    border.width: 1
+                                                    border.color: "#333333"
 
                                                     TextEdit {
                                                         id: codeText
                                                         anchors.fill: parent
-                                                        anchors.margins: 5
+                                                        anchors.margins: 6
                                                         readOnly: true
                                                         selectByMouse: true
                                                         color: "#cccccc"
@@ -1346,25 +1354,27 @@ Rectangle {
                                             // 诊断动作部分
                                             ColumnLayout {
                                                 Layout.fillWidth: true
-                                                spacing: 5
+                                                spacing: 6
 
                                                 Text {
                                                     text: "Action:"
-                                                    color: "#0d6efd"
+                                                    color: "#0d9bfd"
                                                     font.bold: true
-                                                    font.pixelSize: 14
+                                                    font.pixelSize: 13
                                                 }
 
                                                 Rectangle {
                                                     Layout.fillWidth: true
                                                     Layout.preferredHeight: actionText.contentHeight + 10
                                                     color: "#252526"
-                                                    radius: 3
+                                                    radius: 4
+                                                    border.width: 1
+                                                    border.color: "#333333"
 
                                                     TextEdit {
                                                         id: actionText
                                                         anchors.fill: parent
-                                                        anchors.margins: 5
+                                                        anchors.margins: 6
                                                         readOnly: true
                                                         selectByMouse: true
                                                         color: "#cccccc"
@@ -1407,20 +1417,21 @@ Rectangle {
                                 // 内存详情标题
                                 Rectangle {
                                     Layout.fillWidth: true
-                                    Layout.preferredHeight: 30
+                                    Layout.preferredHeight: 32
                                     color: "#252526"
 
                                     RowLayout {
                                         anchors.fill: parent
-                                        anchors.leftMargin: 10
-                                        anchors.rightMargin: 10
-                                        spacing: 5
+                                        anchors.leftMargin: 12
+                                        anchors.rightMargin: 12
+                                        spacing: 8
 
                                         Text {
                                             Layout.alignment: Qt.AlignVCenter
                                             color: "#cccccc"
                                             text: "内存详情"
                                             font.bold: true
+                                            font.pixelSize: 13
                                         }
 
                                         Item {
@@ -1428,12 +1439,13 @@ Rectangle {
                                         }
 
                                         ToolButton {
-                                            Layout.preferredWidth: 20
-                                            Layout.preferredHeight: 20
+                                            Layout.preferredWidth: 24
+                                            Layout.preferredHeight: 24
                                             text: "↻"
                                             font.pixelSize: 14
                                             background: Rectangle {
-                                                color: parent.pressed ? "#4a4a4a" : "transparent"
+                                                color: parent.hovered ? "#3a3d3e" : (parent.pressed ? "#4a4a4a" : "transparent")
+                                                radius: 3
                                             }
                                             contentItem: Text {
                                                 text: parent.text
@@ -1442,6 +1454,9 @@ Rectangle {
                                                 verticalAlignment: Text.AlignVCenter
                                             }
                                             objectName: "refreshMemoryButton"
+                                            ToolTip.visible: hovered
+                                            ToolTip.text: "刷新内存信息"
+                                            ToolTip.delay: 500
                                         }
                                     }
                                 }
@@ -1450,35 +1465,38 @@ Rectangle {
                                 ScrollView {
                                     Layout.fillWidth: true
                                     Layout.fillHeight: true
-                                    Layout.margins: 5
+                                    Layout.margins: 8
                                     clip: true
+                                    ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
                                     ColumnLayout {
                                         width: parent.width
-                                        spacing: 10
+                                        spacing: 12
 
                                         // 表名
                                         ColumnLayout {
                                             Layout.fillWidth: true
-                                            spacing: 2
+                                            spacing: 4
 
                                             Text {
                                                 text: "表名:"
-                                                color: "#0d6efd"
+                                                color: "#0d9bfd"
                                                 font.bold: true
-                                                font.pixelSize: 14
+                                                font.pixelSize: 13
                                             }
 
                                             Rectangle {
                                                 Layout.fillWidth: true
-                                                Layout.preferredHeight: tableNameText.contentHeight + 6
+                                                Layout.preferredHeight: tableNameText.contentHeight + 8
                                                 color: "#252526"
-                                                radius: 3
+                                                radius: 4
+                                                border.width: 1
+                                                border.color: "#333333"
 
                                                 TextEdit {
                                                     id: tableNameText
                                                     anchors.fill: parent
-                                                    anchors.margins: 3
+                                                    anchors.margins: 6
                                                     readOnly: true
                                                     selectByMouse: true
                                                     color: "#cccccc"
@@ -1493,25 +1511,27 @@ Rectangle {
                                         // 表描述
                                         ColumnLayout {
                                             Layout.fillWidth: true
-                                            spacing: 2
+                                            spacing: 4
 
                                             Text {
                                                 text: "表描述:"
-                                                color: "#0d6efd"
+                                                color: "#0d9bfd"
                                                 font.bold: true
-                                                font.pixelSize: 14
+                                                font.pixelSize: 13
                                             }
 
                                             Rectangle {
                                                 Layout.fillWidth: true
                                                 Layout.preferredHeight: tableDescText.contentHeight + 10
                                                 color: "#252526"
-                                                radius: 3
+                                                radius: 4
+                                                border.width: 1
+                                                border.color: "#333333"
 
                                                 TextEdit {
                                                     id: tableDescText
                                                     anchors.fill: parent
-                                                    anchors.margins: 5
+                                                    anchors.margins: 6
                                                     readOnly: true
                                                     selectByMouse: true
                                                     color: "#cccccc"
@@ -1527,18 +1547,19 @@ Rectangle {
                                         // 字段列表标题
                                         Text {
                                             text: "字段列表:"
-                                            color: "#0d6efd"
+                                            color: "#0d9bfd"
                                             font.bold: true
-                                            font.pixelSize: 14
+                                            font.pixelSize: 13
+                                            Layout.topMargin: 4
                                         }
 
                                         // 字段列表
                                         ListView {
                                             id: fieldListView
                                             Layout.fillWidth: true
-                                            Layout.preferredHeight: 250
+                                            Layout.preferredHeight: 280
                                             clip: true
-                                            spacing: 5
+                                            spacing: 8
                                             objectName: "fieldListView"
 
                                             // 示例数据，实际应通过API更新
@@ -1579,15 +1600,17 @@ Rectangle {
 
                                             delegate: Rectangle {
                                                 width: parent.width
-                                                height: fieldLayout.height + 10
+                                                height: fieldLayout.height + 12
                                                 color: "#252526"
-                                                radius: 3
+                                                radius: 4
+                                                border.width: 1
+                                                border.color: fieldMouseArea.containsMouse ? "#3c6a9e" : "#333333"
 
                                                 ColumnLayout {
                                                     id: fieldLayout
                                                     anchors.fill: parent
-                                                    anchors.margins: 5
-                                                    spacing: 2
+                                                    anchors.margins: 8
+                                                    spacing: 4
 
                                                     // 字段名和值
                                                     RowLayout {
@@ -1625,6 +1648,7 @@ Rectangle {
 
                                                 // 鼠标悬停效果
                                                 MouseArea {
+                                                    id: fieldMouseArea
                                                     anchors.fill: parent
                                                     hoverEnabled: true
                                                     onEntered: parent.color = "#2a2d2e"
