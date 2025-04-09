@@ -1066,12 +1066,13 @@ Rectangle {
                                                         }
 
                                                         ToolButton {
+                                                            id: arrowButton
                                                             Layout.preferredWidth: 20
                                                             Layout.preferredHeight: 20
                                                             text: "→"
                                                             font.pixelSize: 12
                                                             background: Rectangle {
-                                                                color: parent.pressed ? "#4a4a4a" : "transparent"
+                                                                color: arrowMouseArea.pressed ? "#4a4a4a" : "transparent"
                                                                 radius: 2
                                                             }
                                                             contentItem: Text {
@@ -1080,12 +1081,18 @@ Rectangle {
                                                                 horizontalAlignment: Text.AlignHCenter
                                                                 verticalAlignment: Text.AlignVCenter
                                                             }
+
+                                                            MouseArea {
+                                                                id: arrowMouseArea
+                                                                anchors.fill: parent
+                                                            }
                                                         }
                                                     }
 
                                                     MouseArea {
                                                         id: deviceListItemMouseArea
                                                         anchors.fill: parent
+                                                        anchors.rightMargin: 20  // 为右侧箭头按钮留出空间
                                                         hoverEnabled: true
                                                         acceptedButtons: Qt.LeftButton
                                                         onEntered: if (!ListView.isCurrentItem)
@@ -1807,6 +1814,19 @@ Rectangle {
             deviceListView.currentIndex = index;
             connectionDialog.visible = true;
             connectionDialog.deviceName = modelData;
+        }
+    }
+
+    Connections {
+        target: arrowMouseArea
+        function onClicked(mouse) {
+            var item = deviceListView.itemAt(mouse.x, mouse.y);
+            if (item) {
+                var index = deviceListView.indexAt(mouse.x, mouse.y);
+                deviceListView.currentIndex = index;
+                connectionDialog.visible = true;
+                connectionDialog.deviceName = deviceListView.model[index];
+            }
         }
     }
 }
