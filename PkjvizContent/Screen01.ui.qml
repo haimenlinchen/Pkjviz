@@ -1445,7 +1445,7 @@ Rectangle {
                 anchors.fill: parent
                 spacing: 0
 
-                // 控制台标题
+                // 控制台标题栏
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 30
@@ -1457,17 +1457,76 @@ Rectangle {
                         anchors.rightMargin: 10
                         spacing: 5
 
-                        Text {
-                            Layout.alignment: Qt.AlignVCenter
-                            color: "#cccccc"
-                            text: "控制台"
-                            font.bold: true
+                        // 选项卡栏
+                        TabBar {
+                            id: consoleTabBar
+                            Layout.preferredWidth: 200
+                            Layout.preferredHeight: 30
+                            background: Rectangle {
+                                color: "transparent"
+                            }
+
+                            // 输出选项卡
+                            TabButton {
+                                id: outputTab
+                                text: "输出"
+                                width: 100
+                                height: 30
+                                background: Rectangle {
+                                    color: parent.checked ? "#4a4a4a" : "transparent"
+                                }
+                                contentItem: Text {
+                                    text: parent.text
+                                    color: "#cccccc"
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    font.pixelSize: 12
+                                }
+                            }
+
+                            // 终端选项卡
+                            TabButton {
+                                id: terminalTab
+                                text: "终端"
+                                width: 100
+                                height: 30
+                                background: Rectangle {
+                                    color: parent.checked ? "#4a4a4a" : "transparent"
+                                }
+                                contentItem: Text {
+                                    text: parent.text
+                                    color: "#cccccc"
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    font.pixelSize: 12
+                                }
+                            }
                         }
 
                         Item {
                             Layout.fillWidth: true
                         }
 
+                        // 清除按钮
+                        ToolButton {
+                            Layout.preferredWidth: 20
+                            Layout.preferredHeight: 20
+                            text: "🗑️"
+                            font.pixelSize: 12
+                            background: Rectangle {
+                                color: parent.pressed ? "#4a4a4a" : "transparent"
+                            }
+                            contentItem: Text {
+                                text: parent.text
+                                color: "#cccccc"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            ToolTip.visible: hovered
+                            ToolTip.text: "清除"
+                        }
+
+                        // 折叠按钮
                         ToolButton {
                             Layout.preferredWidth: 20
                             Layout.preferredHeight: 20
@@ -1482,21 +1541,107 @@ Rectangle {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
+                            ToolTip.visible: hovered
+                            ToolTip.text: "关闭面板"
                         }
                     }
                 }
 
-                // 控制台输出
-                TextArea {
+                // 控制台内容区域
+                StackLayout {
+                    id: consoleStackLayout
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    color: "#cccccc"
-                    background: Rectangle {
-                        color: "transparent"
+                    currentIndex: consoleTabBar.currentIndex
+
+                    clip: true
+
+                    // 输出面板
+                    Rectangle {
+                        color: "#1e1e1e"
+
+                        ScrollView {
+                            anchors.fill: parent
+                            anchors.margins: 5
+                            clip: true
+
+                            TextArea {
+                                id: outputTextArea
+                                readOnly: true
+                                color: "#cccccc"
+                                font.family: "Consolas"
+                                font.pixelSize: 12
+                                wrapMode: TextEdit.WrapAnywhere
+                                background: Rectangle {
+                                    color: "transparent"
+                                }
+                                text: "[10:45:32] 程序已启动\n[10:45:33] 加载模块: core.module\n[10:45:34] 初始化完成\n[10:45:36] 警告: 设备未连接\n[10:45:40] 信息: 等待用户操作"
+                            }
+                        }
                     }
-                    placeholderText: "控制台输出..."
-                    font.family: "Consolas"
-                    font.pixelSize: 14
+
+                    // 终端面板
+                    Rectangle {
+                        color: "#1e1e1e"
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 5
+                            spacing: 0
+
+                            ScrollView {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                clip: true
+
+                                TextArea {
+                                    id: terminalTextArea
+                                    readOnly: true
+                                    color: "#cccccc"
+                                    font.family: "Consolas"
+                                    font.pixelSize: 12
+                                    wrapMode: TextEdit.NoWrap
+                                    background: Rectangle {
+                                        color: "transparent"
+                                    }
+                                    text: "$ python main.py\n初始化环境...\n加载配置文件...\n启动服务...\n服务已启动，监听端口 8080\n"
+                                }
+                            }
+
+                            // 命令输入区域
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 24
+                                color: "#252526"
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 5
+                                    spacing: 5
+
+                                    Text {
+                                        text: "$"
+                                        color: "#cccccc"
+                                        font.family: "Consolas"
+                                        font.pixelSize: 12
+                                    }
+
+                                    TextField {
+                                        id: commandInput
+                                        Layout.fillWidth: true
+                                        height: 24
+                                        color: "#ffffff"
+                                        font.family: "Consolas"
+                                        font.pixelSize: 12
+                                        placeholderText: "输入命令..."
+                                        background: Rectangle {
+                                            color: "transparent"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1826,6 +1971,19 @@ Rectangle {
                 deviceListView.currentIndex = index;
                 connectionDialog.visible = true;
                 connectionDialog.deviceName = deviceListView.model[index];
+            }
+        }
+    }
+
+    // 添加Connections对象来处理returnPressed信号
+    Connections {
+        target: commandInput
+        // Qt 5.15及以上使用function on<SignalName>格式
+        function onAccepted() {
+            if (commandInput.text.trim() !== "") {
+                terminalTextArea.text += "$ " + commandInput.text + "\n";
+                // 这里可以添加命令执行逻辑
+                commandInput.text = "";
             }
         }
     }
